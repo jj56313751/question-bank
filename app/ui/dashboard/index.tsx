@@ -91,7 +91,8 @@ export default function Index({ children }: { children: React.ReactNode }) {
           <div
             style={{
               padding: 10,
-              minHeight: 360,
+              minHeight: 'calc(100vh - 20px)',
+              boxSizing: 'border-box',
               background: '#fff',
               borderRadius: '8px',
             }}
