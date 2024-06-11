@@ -3,9 +3,24 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "lint-staged": "lint-staged",
+    "prepare": "husky && husky",
     "prettier": "prettier --write --ignore-unknown .",
     "prettier:check": "prettier --check --ignore-unknown .",
+    "prettier:comment": "自动格式化当前目录下的所有文件",
+    "commit": "git-cz",
+    "commit:comment": "引导设置规范化的提交信息",
     "start": "next start"
+  },
+  "lint-staged": {
+    "app/**/*.{js,jsx,ts,tsx,vue,css,scss,json}": [
+      "prettier --config .prettierrc.js --write"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    }
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.7",
@@ -27,14 +42,22 @@
     "zod": "^3.22.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "^16.2.3",
+    "@commitlint/config-conventional": "^16.2.1",
     "@types/bcrypt": "^5.0.1",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.14",
     "@vercel/style-guide": "^5.0.1",
+    "commitizen": "^4.2.4",
+    "commitlint-config-cz": "^0.13.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "cz-customizable": "^6.3.0",
     "dotenv": "^16.3.1",
     "eslint": "^8.52.0",
     "eslint-config-next": "^14.0.0",
     "eslint-config-prettier": "9.0.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "0.5.4"
   },
