@@ -12,7 +12,7 @@ import { Button, Breadcrumb, Menu, theme } from 'antd'
 import BreadcrumbItem from 'antd/lib/breadcrumb/BreadcrumbItem'
 import { Layout as AntLayout } from 'antd'
 import { Header, Content, Footer } from 'antd/lib/layout/layout'
-import Sider from 'antd/lib/layout/sider'
+import Sider from 'antd/lib/layout/Sider'
 
 const items2: MenuProps['items'] = [
   UserOutlined,
