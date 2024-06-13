@@ -6,10 +6,12 @@ export default function SelectBank({
   bankValue,
   next,
   bankChange,
+  bankList,
 }: {
   bankValue?: string
   next: any
   bankChange: any
+  bankList: any[]
 }) {
   const handleBankChange = (value: string) => {
     bankChange(value)
@@ -18,6 +20,13 @@ export default function SelectBank({
   const handleNext = (e: any) => {
     bankValue && next()
   }
+
+  const data = bankList.map((item) => {
+    return {
+      value: item.id,
+      label: item.name + '-' + item.description,
+    }
+  })
 
   return (
     <Form name="form" style={{ width: '100%' }} size="middle">
@@ -29,12 +38,7 @@ export default function SelectBank({
           defaultValue={bankValue}
           style={{ flex: 1 }}
           onChange={handleBankChange}
-          options={[
-            { value: 'jack', label: 'Jack' },
-            { value: 'lucy', label: 'Lucy' },
-            { value: 'Yiminghe', label: 'yiminghe' },
-            { value: 'disabled', label: 'Disabled', disabled: true },
-          ]}
+          options={data}
           placeholder="选择题库"
         />
       </Form.Item>
