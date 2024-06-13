@@ -10,7 +10,8 @@
     "prettier:comment": "自动格式化当前目录下的所有文件",
     "commit": "git-cz",
     "commit:comment": "引导设置规范化的提交信息",
-    "start": "next start"
+    "start": "next start",
+    "seed": "node -r dotenv/config ./scripts/seed.js"
   },
   "lint-staged": {
     "app/**/*.{js,jsx,ts,tsx,vue,css,scss,json}": [
@@ -33,6 +34,7 @@
     "autoprefixer": "10.4.15",
     "bcrypt": "^5.1.1",
     "clsx": "^2.0.0",
+    "mysql2": "^3.10.0",
     "next": "^14.0.2",
     "postcss": "8.4.31",
     "react": "18.2.0",
