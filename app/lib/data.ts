@@ -16,7 +16,7 @@ import type { Page } from './types'
 
 export async function fetchBanks(): Promise<Bank[] | unknown> {
   try {
-    const [rows] = await db.query<Bank[]>(`
+    const [rows] = await db.query(`
       SELECT * FROM banks
     `)
     return rows
@@ -29,7 +29,7 @@ export async function fetchQuestionsByBankId(
   id: number,
 ): Promise<Question[] | unknown> {
   try {
-    const [rows] = await db.query<Question[]>(`
+    const [rows] = await db.query(`
       SELECT * FROM questions
       WHERE bank_id = ${id}
     `)
@@ -60,7 +60,7 @@ export async function fetchQuestionsByKeyword({
 
     const offset = (pageNumber - 1) * pageSize
     const limit = pageSize
-    const [rows] = await db.query<Question[]>(`
+    const [rows] = await db.query(`
       SELECT * FROM questions
       ${sql}
       ORDER BY id
