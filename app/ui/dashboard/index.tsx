@@ -1,43 +1,24 @@
 'use client'
 import React, { useState } from 'react'
-import {
-  LaptopOutlined,
-  NotificationOutlined,
-  UserOutlined,
-  MenuUnfoldOutlined,
-  MenuFoldOutlined,
-} from '@ant-design/icons'
-import type { MenuProps } from 'antd'
+import { useRouter } from 'next/navigation'
 import { Button, Breadcrumb, Menu, theme } from 'antd'
 import BreadcrumbItem from 'antd/lib/breadcrumb/BreadcrumbItem'
 import { Layout as AntLayout } from 'antd'
 import { Header, Content, Footer } from 'antd/lib/layout/layout'
 import Sider from 'antd/lib/layout/Sider'
-
-const items2: MenuProps['items'] = [
-  UserOutlined,
-  LaptopOutlined,
-  NotificationOutlined,
-].map((icon, index) => {
-  const key = String(index + 1)
-
-  return {
-    key: `sub${key}`,
-    icon: React.createElement(icon),
-    label: `subnav ${key}`,
-
-    children: new Array(4).fill(null).map((_, j) => {
-      const subKey = index * 4 + j + 1
-      return {
-        key: subKey,
-        label: `option${subKey}`,
-      }
-    }),
-  }
-})
+import navItems from './navItems'
 
 export default function Index({ children }: { children: React.ReactNode }) {
   // const [collapsed, setCollapsed] = useState(false)
+  const router = useRouter()
+  const handleMenuTo = (e: any) => {
+    const { keyPath } = e
+    let path = '/dashboard'
+    while (keyPath.length) {
+      path += `/${keyPath.pop()}`
+    }
+    router.push(path)
+  }
 
   return (
     <AntLayout className="ant-layout-has-sider" style={{ height: '100vh' }}>
@@ -68,9 +49,9 @@ export default function Index({ children }: { children: React.ReactNode }) {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['1']}
-          defaultOpenKeys={['sub1']}
-          items={items2}
+          defaultSelectedKeys={['operate']}
+          items={navItems}
+          onClick={handleMenuTo}
         />
       </Sider>
       <div

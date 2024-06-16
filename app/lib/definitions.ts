@@ -2,7 +2,6 @@
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
-import { RowDataPacket } from 'mysql2/promise'
 
 export type Customer = {
   id: string
@@ -87,21 +86,21 @@ export interface CommonDate {
   updated_at: string
 }
 
-export interface User extends CommonDate, RowDataPacket {
+export interface User extends CommonDate {
   id: number
   name: string
   email: string
   password: string
 }
 
-export interface Bank extends CommonDate, RowDataPacket {
+export interface Bank extends CommonDate {
   id: number
   name: string
   description: string
   created_by: number
 }
 
-export interface Question extends CommonDate, RowDataPacket {
+export interface Question extends CommonDate {
   id: number
   type: 1 | 2 | 3
   title: string
