@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import Index from '@/app/ui/dashboard/index'
+import DashboardContent from '@/app/ui/dashboard/dashboad-content'
 
 export const metadata: Metadata = {
   title: {
@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <Index>{children}</Index>
+  return <DashboardContent>{children}</DashboardContent>
 }

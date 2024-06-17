@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
 import { Button, Form, Select } from 'antd'
+import type { Bank } from '@/app/lib/definitions'
+import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 
 export default function SelectBank({
   bankValue,
@@ -8,17 +9,38 @@ export default function SelectBank({
   bankChange,
   bankList,
 }: {
-  bankValue?: string
+  bankValue?: number
   next: any
   bankChange: any
-  bankList: any[]
+  bankList: Bank[]
 }) {
-  const handleBankChange = (value: string) => {
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const { replace } = useRouter()
+
+  const handleBankChange = (value: number) => {
+    // console.log('[value]-24', value)
+    const params = new URLSearchParams(searchParams)
+    // console.log('[params]-15', params.toString())
     bankChange(value)
+
+    if (value) {
+      params.set('bankId', value.toString())
+    } else {
+      params.delete('bankId')
+    }
+    replace(`${pathname}?${params.toString()}`)
+  }
+
+  const defaultValue =
+    searchParams.get('bankId') && Number(searchParams.get('bankId'))
+
+  if (defaultValue) {
+    bankChange(defaultValue)
   }
 
   const handleNext = (e: any) => {
-    bankValue && next()
+    ;(bankValue || defaultValue) && next()
   }
 
   const data = bankList.map((item) => {
@@ -29,13 +51,19 @@ export default function SelectBank({
   })
 
   return (
-    <Form name="form" style={{ width: '100%' }} size="middle">
+    <Form
+      name="form"
+      initialValues={{
+        Bank: bankValue || defaultValue,
+      }}
+      style={{ width: '100%' }}
+      size="middle"
+    >
       <Form.Item
         name="Bank"
         rules={[{ required: true, message: '请选择题库!' }]}
       >
         <Select
-          defaultValue={bankValue}
           style={{ flex: 1 }}
           onChange={handleBankChange}
           options={data}

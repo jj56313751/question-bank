@@ -1,15 +1,34 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Steps, message } from 'antd'
 import SelectBank from '@/app/ui/dashboard/operate/select-bank'
-import SearchContent from '@/app/ui/dashboard/operate/search-content'
+import SearchBar from '@/app/ui/dashboard/operate/search-bar'
+import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import type { Bank } from '@/app/lib/definitions'
 
-export default function Index({ bankList }: { bankList: any[] }) {
+export default function Index({
+  bankList,
+  query,
+  bankId,
+}: {
+  bankList: Bank[]
+  query?: string
+  bankId?: number
+}) {
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const { replace } = useRouter()
+
   const [messageApi, contextHolder] = message.useMessage()
 
   const [currentSteps, setCurrentSteps] = useState<number>(0)
   const onStepsChange = (value: number) => {
-    // console.log('onChange:', value)
+    console.log('onChange:', value)
+    if (value === 0) {
+      const params = new URLSearchParams(searchParams)
+      params.delete('query')
+      replace(`${pathname}?${params.toString()}`)
+    }
     if (bankValue) {
       setCurrentSteps(value)
     } else {
@@ -19,6 +38,12 @@ export default function Index({ bankList }: { bankList: any[] }) {
       })
     }
   }
+  useEffect(() => {
+    if (query && bankId) {
+      setCurrentSteps(1)
+    }
+  }, [query, bankId])
+
   const items = [
     {
       title: '第一步',
@@ -30,11 +55,12 @@ export default function Index({ bankList }: { bankList: any[] }) {
     },
   ]
 
-  const [bankValue, setBankValue] = useState<string | undefined>()
+  const [bankValue, setBankValue] = useState<number | undefined>()
   const handleNext = (e: any) => {
     setCurrentSteps(currentSteps + 1)
   }
-  const bankChange = (value: string) => {
+  const bankChange = (value: number) => {
+    // console.log('[value]-48', value)
     setBankValue(value)
   }
 
@@ -50,7 +76,12 @@ export default function Index({ bankList }: { bankList: any[] }) {
           />
         )
       case 1:
-        return <SearchContent />
+        return (
+          <>
+            <SearchBar />
+            {/* <SearchResult query={query} bankId={bankValue as number} /> */}
+          </>
+        )
       default:
         return
     }
