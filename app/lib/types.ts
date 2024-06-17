@@ -1,4 +1,4 @@
 export type Page = {
-  pageNumber: number
+  pageNumber?: number
   pageSize?: number
 }

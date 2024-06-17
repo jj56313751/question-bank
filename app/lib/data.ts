@@ -14,14 +14,46 @@ import { formatCurrency } from './utils'
 import db from '../../db/index'
 import type { Page } from './types'
 
-export async function fetchBanks(): Promise<Bank[] | unknown> {
+export async function fetchBanks({
+  id,
+  query,
+  pageNumber = 1,
+  pageSize = 999999,
+}: { id?: number; query?: string } & Page): Promise<
+  { total: number; list: Bank[] } | unknown
+> {
   try {
+    let sql = 'WHERE 1=1'
+
+    if (id) {
+      sql += ` AND id = ${id}`
+    }
+
+    if (query) {
+      sql += ` AND name LIKE '%${query}%'`
+    }
+
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total_count FROM banks ${sql}`,
+    )
+
+    const offset = (pageNumber - 1) * pageSize
+    const limit = pageSize
+
     const [rows] = await db.query(`
       SELECT * FROM banks
+      ${sql}
+      ORDER BY id
+      LIMIT ${limit} OFFSET ${offset}
     `)
-    return rows
-  } catch (err) {
-    return err
+
+    return {
+      total: (countRows as any)[0].total_count,
+      list: rows,
+    }
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch banks data.')
   }
 }
 
@@ -34,25 +66,30 @@ export async function fetchQuestionsByBankId(
       WHERE bank_id = ${id}
     `)
     return rows
-  } catch (err) {
-    return err
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetchQuestionsByBankId.')
   }
 }
 
-export async function fetchQuestionsByKeyword({
+export async function fetchQuestions({
   bankId,
   query,
-  pageNumber,
+  pageNumber = 1,
   pageSize = 999999,
-}: { bankId: number; query: string } & Page): Promise<
+}: { bankId?: number; query?: string } & Page): Promise<
   { total: number; list: Question[] } | unknown
 > {
   try {
-    const sql = `
-      WHERE 
-        bank_id = ${bankId} AND
-        (title LIKE '%${query}%' OR options LIKE '%${query}%')
-    `
+    let sql = 'WHERE 1=1'
+
+    if (bankId) {
+      sql += ` AND bank_id = ${bankId}`
+    }
+
+    if (query) {
+      sql += ` AND (title LIKE '%${query}%' OR options LIKE '%${query}%')`
+    }
 
     const [countRows] = await db.query(
       `SELECT COUNT(*) AS total_count FROM questions ${sql}`,
@@ -70,8 +107,9 @@ export async function fetchQuestionsByKeyword({
       total: (countRows as any)[0].total_count,
       list: rows,
     }
-  } catch (err) {
-    return err
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetchQuestions.')
   }
 }
 

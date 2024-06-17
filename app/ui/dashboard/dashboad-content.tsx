@@ -1,6 +1,6 @@
 'use client'
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { Button, Breadcrumb, Menu, theme } from 'antd'
 import BreadcrumbItem from 'antd/lib/breadcrumb/BreadcrumbItem'
 import { Layout as AntLayout } from 'antd'
@@ -8,10 +8,32 @@ import { Header, Content, Footer } from 'antd/lib/layout/layout'
 import Sider from 'antd/lib/layout/Sider'
 import navItems from './navItems'
 
-export default function Index({ children }: { children: React.ReactNode }) {
+export default function DashboardContent({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   // const [collapsed, setCollapsed] = useState(false)
   const router = useRouter()
-  const handleMenuTo = (e: any) => {
+  const pathName = usePathname()
+  const defaultSelectedKeys: string[] = ['operate']
+  const [selectedKeys, setSelectedkeys] =
+    useState<string[]>(defaultSelectedKeys)
+  const [openKeys, setOpenKeys] = useState<string[]>()
+  useEffect(() => {
+    const path = pathName.split('/')
+    const keys = path.filter((item) => item)
+    keys.shift() // remove /dashboard
+    setSelectedkeys(keys)
+    if (keys.length > 1) {
+      // open children
+      setOpenKeys(keys.slice(0, -1))
+    }
+  }, [pathName])
+  // console.log('selectedKeys', selectedKeys)
+  // console.log('openKeys', openKeys)
+
+  const onMeunClick = (e: any) => {
     const { keyPath } = e
     let path = '/dashboard'
     while (keyPath.length) {
@@ -49,9 +71,12 @@ export default function Index({ children }: { children: React.ReactNode }) {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['operate']}
+          defaultSelectedKeys={defaultSelectedKeys}
+          selectedKeys={selectedKeys}
+          openKeys={openKeys}
+          onOpenChange={(keys) => setOpenKeys(keys)}
           items={navItems}
-          onClick={handleMenuTo}
+          onClick={onMeunClick}
         />
       </Sider>
       <div

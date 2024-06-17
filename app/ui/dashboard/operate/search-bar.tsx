@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Input } from 'antd'
+import { Input, message } from 'antd'
 import type { SearchProps } from 'antd/es/input/Search'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
@@ -8,6 +8,7 @@ import { useDebouncedCallback } from 'use-debounce'
 const { Search } = Input
 
 export default function SearchBar() {
+  const [messageApi, contextHolder] = message.useMessage()
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const { replace } = useRouter()
@@ -22,6 +23,10 @@ export default function SearchBar() {
         params.set('query', value)
       } else {
         params.delete('query')
+        messageApi.open({
+          type: 'warning',
+          content: '请输入题目关键字',
+        })
       }
       replace(`${pathname}?${params.toString()}`)
     },
@@ -29,12 +34,15 @@ export default function SearchBar() {
   )
 
   return (
-    <Search
-      defaultValue={searchParams.get('query')?.toString()}
-      placeholder="输入题目关键字"
-      size="middle"
-      onSearch={onSearch}
-      enterButton
-    />
+    <>
+      {contextHolder}
+      <Search
+        defaultValue={searchParams.get('query')?.toString()}
+        placeholder="输入题目关键字"
+        size="middle"
+        onSearch={onSearch}
+        enterButton
+      />
+    </>
   )
 }

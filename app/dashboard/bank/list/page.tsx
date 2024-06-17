@@ -2,9 +2,9 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '题库管理',
+  title: '题库列表',
 }
 
 export default async function Page() {
-  return <main>bank</main>
+  return <main>bank list</main>
 }

@@ -17,6 +17,12 @@ const navItems: MenuProps['items'] = [
     key: 'bank',
     icon: React.createElement(DatabaseOutlined),
     label: '题库管理',
+    children: [
+      {
+        key: 'list',
+        label: '题库列表',
+      },
+    ],
   },
   {
     key: 'tools',

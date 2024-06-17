@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
-import Index from '@/app/ui/dashboard/operate/index'
+import OperateContent from '@/app/ui/dashboard/operate/operate-content'
 import { fetchBanks } from '@/app/lib/data'
 import type { Bank } from '@/app/lib/definitions'
 import SearchResult from '@/app/ui/dashboard/operate/search-result'
@@ -17,14 +17,15 @@ export default async function Page({
     bankId?: number
   }
 }) {
-  const banks = (await fetchBanks()) as Bank[]
+  const banksRes = await fetchBanks({})
+  const banks = (banksRes as any)?.list as Bank[]
   const query = searchParams?.query || ''
   const bankId = searchParams?.bankId || 0
   // const currentPage = Number(searchParams?.page) || 1
 
   return (
     <>
-      <Index
+      <OperateContent
         bankList={JSON.parse(JSON.stringify(banks))}
         query={query}
         bankId={bankId}

@@ -1,4 +1,4 @@
-import { fetchQuestionsByKeyword } from '@/app/lib/data'
+import { fetchQuestions } from '@/app/lib/data'
 import type { Question } from '@/app/lib/definitions'
 import { questionTypeMap } from './config'
 import { Empty } from 'antd'
@@ -13,7 +13,7 @@ export default async function SearchResult({
   let currentPage = 1
   let questionList: Question[] = []
   if (query && bankId) {
-    const res: any = await fetchQuestionsByKeyword({
+    const res: any = await fetchQuestions({
       bankId,
       query,
       pageNumber: currentPage,
