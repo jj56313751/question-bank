@@ -88,7 +88,10 @@ export default function DashboardContent({
         }}
       >
         {/* <Header style={{ padding: 0, background: '#fff' }}></Header> */}
-        <Content style={{ margin: '10px 10px 0' }}>
+        <Content
+          style={{ padding: '10px' }}
+          className="box-border flex h-full flex-col"
+        >
           {/* <Breadcrumb style={{ margin: '16px 0' }}>
             <BreadcrumbItem>Home</BreadcrumbItem>
             <BreadcrumbItem>List</BreadcrumbItem>
@@ -97,7 +100,7 @@ export default function DashboardContent({
           <div
             style={{
               padding: 10,
-              minHeight: 'calc(100vh - 20px)',
+              minHeight: '100%',
               boxSizing: 'border-box',
               background: '#fff',
               borderRadius: '8px',

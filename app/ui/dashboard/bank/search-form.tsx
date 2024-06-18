@@ -4,12 +4,19 @@ import { Metadata } from 'next'
 import { DownOutlined } from '@ant-design/icons'
 import { Form, Space, Button, Row, Col, Select, Input } from 'antd'
 import { SearchFormItem } from '@/app/lib/types'
+import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useDebouncedCallback } from 'use-debounce'
 
 export const metadata: Metadata = {
   title: '题库列表',
 }
 
 export default function SearchForm({ items }: { items: SearchFormItem[] }) {
+  const searchParams = useSearchParams()
+  // console.log('[searchParams]-15', searchParams)
+  const pathname = usePathname()
+  const { replace } = useRouter()
+
   const [form] = Form.useForm()
   const [expand, setExpand] = useState(false)
   const formStyle: React.CSSProperties = {
@@ -18,7 +25,6 @@ export default function SearchForm({ items }: { items: SearchFormItem[] }) {
   }
 
   const getFields = () => {
-    console.log('items', items)
     const count = expand ? items.length : Math.min(items.length, 3)
     const children: any[] = []
     for (let i = 0; i < count; i++) {
@@ -41,12 +47,38 @@ export default function SearchForm({ items }: { items: SearchFormItem[] }) {
     return children
   }
 
+  const params = new URLSearchParams(searchParams)
+
+  const onSearch = useDebouncedCallback(() => {
+    const values = form.getFieldsValue()
+    for (const key in values) {
+      if (values[key] === undefined) {
+        params.delete(key)
+      } else {
+        params.set(key, values[key])
+      }
+    }
+    replace(`${pathname}?${params.toString()}`)
+  }, 300)
+
+  // init form values
+  const entries = params.entries()
+  let initialValues: any = {}
+  for (const [key, value] of entries) {
+    initialValues[key] = value
+  }
+
   return (
-    <Form form={form} name="advanced_search" style={formStyle}>
+    <Form
+      form={form}
+      name="advanced_search"
+      initialValues={initialValues}
+      style={formStyle}
+    >
       <Row gutter={24}>{getFields()}</Row>
       <div style={{ textAlign: 'right' }}>
         <Space size="small">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" onClick={onSearch}>
             搜索
           </Button>
           <Button

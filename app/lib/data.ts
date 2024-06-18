@@ -16,21 +16,21 @@ import type { Page } from './types'
 
 export async function fetchBanks({
   id,
-  query,
+  name,
   pageNumber = 1,
   pageSize = 999999,
-}: { id?: number; query?: string } & Page): Promise<
+}: { id?: number; name?: string } & Page): Promise<
   { total: number; list: Bank[] } | unknown
 > {
   try {
     let sql = 'WHERE 1=1'
 
     if (id) {
-      sql += ` AND id = ${id}`
+      sql += ` AND bank.id = ${id}`
     }
 
-    if (query) {
-      sql += ` AND name LIKE '%${query}%'`
+    if (name) {
+      sql += ` AND bank.name LIKE '%${name}%'`
     }
 
     const [countRows] = await db.query(
@@ -41,9 +41,23 @@ export async function fetchBanks({
     const limit = pageSize
 
     const [rows] = await db.query(`
-      SELECT * FROM banks
+      SELECT 
+        bank.*,
+        IFNULL(question.questions_count, 0) AS total
+      FROM 
+        banks bank
+      LEFT JOIN (
+        SELECT 
+          bank_id, 
+          COUNT(*) AS questions_count
+        FROM 
+          questions
+        GROUP BY 
+          bank_id
+      ) question ON bank.id = question.bank_id
       ${sql}
-      ORDER BY id
+      ORDER BY 
+        bank.id
       LIMIT ${limit} OFFSET ${offset}
     `)
 

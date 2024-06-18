@@ -9,6 +9,7 @@ export const searchItems: SearchFormItem[] = [
     },
     props: {
       placeholder: '请输入题库关键字',
+      allowClear: true,
     },
   },
 ]
