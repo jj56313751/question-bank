@@ -38,6 +38,9 @@ importers:
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
+      dayjs:
+        specifier: ^1.11.11
+        version: 1.11.11
       mysql2:
         specifier: ^3.10.0
         version: 3.10.0

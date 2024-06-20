@@ -10,9 +10,9 @@ import {
   Bank,
   Question,
 } from './definitions'
-import { formatCurrency } from './utils'
+import { formatCurrency, toCamelCase } from './utils'
 import db from '../../db/index'
-import type { Page } from './types'
+import type { Page, BankList } from './types'
 
 export async function fetchBanks({
   id,
@@ -20,7 +20,7 @@ export async function fetchBanks({
   pageNumber = 1,
   pageSize = 999999,
 }: { id?: number; name?: string } & Page): Promise<
-  { total: number; list: Bank[] } | unknown
+  { total: number; list: BankList[] } | unknown
 > {
   try {
     let sql = 'WHERE 1=1'
@@ -34,7 +34,7 @@ export async function fetchBanks({
     }
 
     const [countRows] = await db.query(
-      `SELECT COUNT(*) AS total_count FROM banks ${sql}`,
+      `SELECT COUNT(*) AS total_count FROM banks bank ${sql}`,
     )
 
     const offset = (pageNumber - 1) * pageSize
@@ -62,8 +62,8 @@ export async function fetchBanks({
     `)
 
     return {
-      total: (countRows as any)[0].total_count,
-      list: rows,
+      total: (countRows as any[])[0].total_count,
+      list: (rows as BankList[]).map(toCamelCase),
     }
   } catch (error) {
     console.error('Database Error:', error)
@@ -88,10 +88,11 @@ export async function fetchQuestionsByBankId(
 
 export async function fetchQuestions({
   bankId,
-  query,
+  title,
+  type,
   pageNumber = 1,
   pageSize = 999999,
-}: { bankId?: number; query?: string } & Page): Promise<
+}: { bankId?: number; title?: string; type?: number } & Page): Promise<
   { total: number; list: Question[] } | unknown
 > {
   try {
@@ -101,8 +102,12 @@ export async function fetchQuestions({
       sql += ` AND bank_id = ${bankId}`
     }
 
-    if (query) {
-      sql += ` AND (title LIKE '%${query}%' OR options LIKE '%${query}%')`
+    if (title) {
+      sql += ` AND (title LIKE '%${title}%' OR options LIKE '%${title}%')`
+    }
+
+    if (type) {
+      sql += ` AND type = ${type}`
     }
 
     const [countRows] = await db.query(
