@@ -1,21 +1,21 @@
 import { fetchQuestions } from '@/app/lib/data'
 import type { Question } from '@/app/lib/definitions'
-import { questionTypeMap } from './config'
+import { questionTypesMap } from '@/app/lib/constant'
 import { Empty } from 'antd'
 
 export default async function SearchResult({
-  query,
+  title,
   bankId,
 }: {
-  query?: string
+  title?: string
   bankId?: number
 }) {
   let currentPage = 1
   let questionList: Question[] = []
-  if (query && bankId) {
+  if (title && bankId) {
     const res: any = await fetchQuestions({
       bankId,
-      query,
+      title,
       pageNumber: currentPage,
     })
     questionList = res.list
@@ -26,7 +26,7 @@ export default async function SearchResult({
       {questionList && questionList.length ? (
         questionList?.map((question) => (
           <div className="" key={question.id}>
-            <p>{questionTypeMap[question.type]}</p>
+            <p>{questionTypesMap[String(question.type)]}</p>
             <p>{question.title}</p>
             <p>{question.options}</p>
             <p>正确答案：{question.answer}</p>
