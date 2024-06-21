@@ -56,12 +56,14 @@ async function seedBanks(client) {
     const [createTable] = await client.query(`
       CREATE TABLE IF NOT EXISTS banks (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        description VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description VARCHAR(255) NULL,
         created_by INT NOT NULL,
         FOREIGN KEY (created_by) REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        updated_by INT NULL,
+        FOREIGN KEY (updated_by) REFERENCES users(id)
       );
     `)
 
@@ -98,17 +100,19 @@ async function seedQuestions(client) {
     const [createTable] = await client.query(`
       CREATE TABLE IF NOT EXISTS questions (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        type INT NOT NULL,
+        type INT NULL,
         title VARCHAR(255) NOT NULL,
-        options VARCHAR(255) NOT NULL,
-        answer VARCHAR(255) NOT NULL,
-        analysis VARCHAR(255) NOT NULL,
+        options VARCHAR(255) NULL,
+        answer VARCHAR(255) NULL,
+        analysis VARCHAR(255) NULL,
         bank_id INT NOT NULL,
         FOREIGN KEY (bank_id) REFERENCES banks(id),
         created_by INT NOT NULL,
         FOREIGN KEY (created_by) REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        updated_by INT NULL,
+        FOREIGN KEY (updated_by) REFERENCES users(id)
       );
     `)
 
