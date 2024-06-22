@@ -1,8 +1,11 @@
 'use client'
-import { Button, Space, Table, Tag } from 'antd'
+import { useState } from 'react'
+import { Button, Space, Table, message } from 'antd'
 import type { TableProps } from 'antd'
 import { BankList } from '@/app/lib/types'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import BankEditModal from './bank-edit-modal'
+import { updateBank } from '@/app/lib/actions'
 import dayjs from 'dayjs'
 
 export default function ListTable({
@@ -15,6 +18,8 @@ export default function ListTable({
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const { replace, push } = useRouter()
+
+  const [messageApi, contextHolder] = message.useMessage()
 
   const onPaginationChange = (page: number, pageSize: number) => {
     const params = new URLSearchParams(searchParams)
@@ -91,35 +96,86 @@ export default function ListTable({
       dataIndex: 'action',
       key: 'action',
       align: 'center',
+      width: 150,
+      fixed: 'right',
       render: (_, record) => (
         <Space size="small">
-          <Button type="link">编辑</Button>
+          <Button type="link" onClick={onEditClick(record)}>
+            编辑
+          </Button>
           <Button type="link">导入</Button>
         </Space>
       ),
     },
   ]
 
+  const [visible, setVisible] = useState<boolean>(false)
+  const [editId, setEditId] = useState<number>()
+  const [initialValues, setInitialValues] =
+    useState<Pick<BankList, 'name' | 'description'>>()
+
+  const onEditClick = (record: BankList) => () => {
+    // console.log('[record]-112', record)
+    setEditId(record.id)
+    setInitialValues({
+      name: record.name,
+      description: record.description,
+    })
+    setVisible(true)
+  }
+
+  const handleOk = async (form: any) => {
+    form
+      .validateFields()
+      .then(async (values: any) => {
+        console.log('[values]-18', values)
+        console.log('[editId]-18', editId)
+        const err = await updateBank(editId as number, values)
+        if (!err) {
+          messageApi.success('修改成功')
+          setVisible(false)
+        } else {
+          if (err.code === 'ER_DUP_ENTRY') {
+            messageApi.error('题库名称已存在')
+          } else {
+            messageApi.error(err.message)
+          }
+        }
+      })
+      .catch((err: any) => console.log('err', err))
+  }
+
   return (
-    <Table
-      className="flex-1"
-      columns={columns}
-      dataSource={dataSource}
-      rowKey="id"
-      scroll={{
-        x: 1000,
-      }}
-      pagination={{
-        defaultCurrent: searchParams.get('pageNumber')
-          ? Number(searchParams.get('pageNumber'))
-          : undefined,
-        defaultPageSize: searchParams.get('pageSize')
-          ? Number(searchParams.get('pageSize'))
-          : undefined,
-        showSizeChanger: true,
-        onChange: onPaginationChange,
-        total: total,
-      }}
-    />
+    <>
+      {contextHolder}
+      <Table
+        className="flex-1"
+        columns={columns}
+        dataSource={dataSource}
+        rowKey="id"
+        scroll={{
+          x: 1000,
+          y: 'calc(100vh - 128px - 20px - 20px - 55px - 32px - 20px)',
+        }}
+        pagination={{
+          defaultCurrent: searchParams.get('pageNumber')
+            ? Number(searchParams.get('pageNumber'))
+            : undefined,
+          defaultPageSize: searchParams.get('pageSize')
+            ? Number(searchParams.get('pageSize'))
+            : undefined,
+          showSizeChanger: true,
+          onChange: onPaginationChange,
+          total: total,
+        }}
+      />
+      <BankEditModal
+        title="编辑"
+        initialValues={initialValues}
+        visible={visible}
+        handleOk={handleOk}
+        handleCancel={() => setVisible(false)}
+      />
+    </>
   )
 }

@@ -11,7 +11,13 @@ export const metadata: Metadata = {
   title: '题库列表',
 }
 
-export default function SearchForm({ items }: { items: SearchFormItem[] }) {
+export default function SearchForm({
+  items,
+  btns,
+}: {
+  items: SearchFormItem[]
+  btns?: any
+}) {
   const searchParams = useSearchParams()
   // console.log('[searchParams]-15', searchParams)
   const pathname = usePathname()
@@ -21,7 +27,7 @@ export default function SearchForm({ items }: { items: SearchFormItem[] }) {
   const [expand, setExpand] = useState(false)
   const formStyle: React.CSSProperties = {
     maxWidth: 'none',
-    padding: 24,
+    padding: '20px 10px',
   }
 
   const getFields = () => {
@@ -50,15 +56,20 @@ export default function SearchForm({ items }: { items: SearchFormItem[] }) {
   const params = new URLSearchParams(searchParams)
 
   const onSearch = useDebouncedCallback(() => {
-    const values = form.getFieldsValue()
-    for (const key in values) {
-      if (values[key] === undefined) {
-        params.delete(key)
-      } else {
-        params.set(key, values[key])
-      }
-    }
-    replace(`${pathname}?${params.toString()}`)
+    form
+      .validateFields()
+      .then((values) => {
+        console.log('[values]-62', values)
+        for (const key in values) {
+          if (values[key] === undefined || values[key] === '') {
+            params.delete(key)
+          } else {
+            params.set(key, values[key])
+          }
+        }
+        replace(`${pathname}?${params.toString()}`)
+      })
+      .catch((err) => console.log(err))
   }, 300)
 
   // init form values
@@ -66,6 +77,15 @@ export default function SearchForm({ items }: { items: SearchFormItem[] }) {
   let initialValues: any = {}
   for (const [key, value] of entries) {
     initialValues[key] = value
+  }
+
+  const onReset = () => {
+    const fields = form.getFieldsValue()
+    const emptyFields = Object.keys(fields).reduce((acc: any, key) => {
+      acc[key] = undefined
+      return acc
+    }, {})
+    form.setFieldsValue(emptyFields)
   }
 
   return (
@@ -81,13 +101,8 @@ export default function SearchForm({ items }: { items: SearchFormItem[] }) {
           <Button type="primary" htmlType="submit" onClick={onSearch}>
             搜索
           </Button>
-          <Button
-            onClick={() => {
-              form.resetFields()
-            }}
-          >
-            清空
-          </Button>
+          <Button onClick={onReset}>清空</Button>
+          {btns && btns()}
           {items.length > 3 && (
             <a
               style={{ fontSize: 12 }}

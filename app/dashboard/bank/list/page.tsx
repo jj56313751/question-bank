@@ -5,6 +5,7 @@ import { searchItems } from './config'
 import ListTable from '@/app/ui/dashboard/bank/list-table'
 import { fetchBanks } from '@/app/lib/data'
 import { BankList } from '@/app/lib/types'
+import BankCreate from '@/app/ui/dashboard/bank/bank-create'
 
 export const metadata: Metadata = {
   title: '题库列表',
@@ -30,7 +31,7 @@ export default async function Page({
 
   return (
     <>
-      <SearchForm items={searchItems} />
+      <SearchForm items={searchItems} btns={BankCreate} />
       <ListTable dataSource={dataSource} total={total} />
     </>
   )

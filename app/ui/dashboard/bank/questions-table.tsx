@@ -50,6 +50,8 @@ const columns: TableProps<QuestionList>['columns'] = [
     dataIndex: 'action',
     key: 'action',
     align: 'center',
+    width: 150,
+    fixed: 'right',
     render: (_, record) => (
       <Space size="small">
         <Button type="link">编辑</Button>
@@ -94,6 +96,7 @@ export default function ListTable({
       rowKey="id"
       scroll={{
         x: 1000,
+        y: 'calc(100vh - 128px - 20px - 20px - 55px - 32px - 20px)',
       }}
       pagination={{
         defaultCurrent: searchParams.get('pageNumber')
