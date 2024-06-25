@@ -30,7 +30,13 @@ export async function fetchBanks({
 
     const [rows] = await db.query(`
       SELECT 
-        bank.*,
+        bank.id,
+        bank.name,
+        bank.description,
+        bank.created_by createdBy,
+        bank.created_at createdAt,
+        bank.updated_at updatedAt,
+        bank.updated_by updatedBy,
         IFNULL(question.questions_count, 0) AS total
       FROM 
         banks bank
@@ -51,7 +57,7 @@ export async function fetchBanks({
 
     return {
       total: (countRows as any[])[0].total_count,
-      list: (rows as BankList[]).map(toCamelCase),
+      list: rows as BankList[],
     }
   } catch (error) {
     console.error('Database Error:', error)
@@ -64,10 +70,22 @@ export async function fetchQuestionsByBankId(
 ): Promise<QuestionList[] | unknown> {
   try {
     const [rows] = await db.query(`
-      SELECT * FROM questions
+      SELECT 
+        id,
+        type,
+        title,
+        options,
+        answer,
+        analysis,
+        bank_id bankId,
+        created_by createdBy,
+        created_at createdAt,
+        updated_at updatedAt,
+        updated_by updatedBy
+      FROM questions
       WHERE bank_id = ${id}
     `)
-    return (rows as QuestionList[]).map(toCamelCase)
+    return rows as QuestionList[]
   } catch (error) {
     console.error('Database Error:', error)
     throw new Error('Failed to fetchQuestionsByBankId.')
@@ -105,14 +123,26 @@ export async function fetchQuestions({
     const offset = (pageNumber - 1) * pageSize
     const limit = pageSize
     const [rows] = await db.query(`
-      SELECT * FROM questions
+      SELECT 
+        id,
+        type,
+        title,
+        options,
+        answer,
+        analysis,
+        bank_id bankId,
+        created_by createdBy,
+        created_at createdAt,
+        updated_at updatedAt,
+        updated_by updatedBy
+      FROM questions
       ${sql}
       ORDER BY id
       LIMIT ${limit} OFFSET ${offset}
     `)
     return {
       total: (countRows as any)[0].total_count,
-      list: (rows as QuestionList[]).map(toCamelCase),
+      list: rows as QuestionList[],
     }
   } catch (error) {
     console.error('Database Error:', error)
