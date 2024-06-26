@@ -1,5 +1,6 @@
 'use client'
 import { useEffect } from 'react'
+import { BankList } from '@/app/lib/types'
 import { Modal, Form, Input } from 'antd'
 const { TextArea } = Input
 
@@ -14,11 +15,7 @@ export default function BankEditModal({
   visible: boolean
   handleOk: any
   handleCancel: any
-  initialValues?: {
-    id?: number
-    name: string
-    description: string
-  }
+  initialValues?: Pick<BankList, 'name' | 'description'>
 }) {
   const [form] = Form.useForm()
   const layout = {
@@ -32,7 +29,7 @@ export default function BankEditModal({
 
   useEffect(() => {
     if (initialValues) {
-      console.log('[initialValues]-35', initialValues)
+      // console.log('[initialValues]-35', initialValues)
       form.setFieldsValue(initialValues) // reset int value
     }
   }, [initialValues, form])

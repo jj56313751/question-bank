@@ -31,7 +31,7 @@ export default async function Page({
 
   return (
     <>
-      <SearchForm items={searchItems} btns={BankCreate} />
+      <SearchForm items={searchItems} btns={<BankCreate />} />
       <ListTable dataSource={dataSource} total={total} />
     </>
   )

@@ -4,8 +4,9 @@
 // However, these types are generated automatically if you're using an ORM such as Prisma.
 import { questionTypesMap } from './constant'
 export interface CommonDate {
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
 }
 
 export interface User extends CommonDate {
@@ -20,17 +21,19 @@ export interface Bank extends CommonDate {
   name: string
   description: string
   created_by: number
-  updated_by: number
+  updated_by?: number
+  deleted_by?: number
 }
 
 export interface Question extends CommonDate {
   id: number
-  type: typeof questionTypesMap
+  type: keyof typeof questionTypesMap
   title: string
   options: string
   answer: string
-  analysis: string
+  analysis?: string
   bank_id: number
   created_by: number
-  updated_by: number
+  updated_by?: number
+  deleted_by?: number
 }

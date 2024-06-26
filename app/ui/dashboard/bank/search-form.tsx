@@ -1,21 +1,18 @@
 'use client'
 import React, { useState } from 'react'
-import { Metadata } from 'next'
 import { DownOutlined } from '@ant-design/icons'
-import { Form, Space, Button, Row, Col, Select, Input } from 'antd'
+import { Form, Flex, Space, Button, Row, Col, Select, Input } from 'antd'
 import { SearchFormItem } from '@/app/lib/types'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
 
-export const metadata: Metadata = {
-  title: '题库列表',
-}
-
 export default function SearchForm({
   items,
+  children,
   btns,
 }: {
   items: SearchFormItem[]
+  children?: React.ReactNode
   btns?: any
 }) {
   const searchParams = useSearchParams()
@@ -59,7 +56,7 @@ export default function SearchForm({
     form
       .validateFields()
       .then((values) => {
-        console.log('[values]-62', values)
+        // console.log('[values]-62', values)
         for (const key in values) {
           if (values[key] === undefined || values[key] === '') {
             params.delete(key)
@@ -96,13 +93,14 @@ export default function SearchForm({
       style={formStyle}
     >
       <Row gutter={24}>{getFields()}</Row>
-      <div style={{ textAlign: 'right' }}>
+      <Flex gap="middle" justify="flex-end" align="center">
+        <div className="flex-1">{children}</div>
         <Space size="small">
           <Button type="primary" htmlType="submit" onClick={onSearch}>
             搜索
           </Button>
           <Button onClick={onReset}>清空</Button>
-          {btns && btns()}
+          {btns}
           {items.length > 3 && (
             <a
               style={{ fontSize: 12 }}
@@ -114,7 +112,7 @@ export default function SearchForm({
             </a>
           )}
         </Space>
-      </div>
+      </Flex>
     </Form>
   )
 }
