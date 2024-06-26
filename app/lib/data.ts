@@ -1,4 +1,4 @@
-import { toCamelCase } from './utils'
+// import { toCamelCase } from './utils'
 import db from '../../db/index'
 import type { Page, BankList, QuestionList } from './types'
 
@@ -11,7 +11,7 @@ export async function fetchBanks({
   { total: number; list: BankList[] } | unknown
 > {
   try {
-    let sql = 'WHERE 1=1'
+    let sql = 'WHERE deleted_at IS NULL'
 
     if (id) {
       sql += ` AND bank.id = ${id}`
@@ -102,7 +102,7 @@ export async function fetchQuestions({
   { total: number; list: QuestionList[] } | unknown
 > {
   try {
-    let sql = 'WHERE 1=1'
+    let sql = 'WHERE deleted_at IS NULL'
 
     if (bankId) {
       sql += ` AND bank_id = ${bankId}`

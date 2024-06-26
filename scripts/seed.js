@@ -17,6 +17,8 @@ async function seedUsers(client) {
         password VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP NULL DEFAULT NULL,
+        deleted_by INT NULL,
         UNIQUE KEY unique_email (email)
       );
     `)
@@ -63,7 +65,10 @@ async function seedBanks(client) {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         updated_by INT NULL,
-        FOREIGN KEY (updated_by) REFERENCES users(id)
+        FOREIGN KEY (updated_by) REFERENCES users(id),
+        deleted_at TIMESTAMP NULL DEFAULT NULL,
+        deleted_by INT NULL,
+        FOREIGN KEY (deleted_by) REFERENCES users(id)
       );
     `)
 
@@ -112,7 +117,10 @@ async function seedQuestions(client) {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         updated_by INT NULL,
-        FOREIGN KEY (updated_by) REFERENCES users(id)
+        FOREIGN KEY (updated_by) REFERENCES users(id),
+        deleted_at TIMESTAMP NULL DEFAULT NULL,
+        deleted_by INT NULL,
+        FOREIGN KEY (deleted_by) REFERENCES users(id)
       );
     `)
 
