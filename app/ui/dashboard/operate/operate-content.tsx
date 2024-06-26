@@ -8,11 +8,11 @@ import type { Bank } from '@/app/lib/definitions'
 
 export default function Index({
   bankList,
-  query,
+  title,
   bankId,
 }: {
   bankList: Bank[]
-  query?: string
+  title?: string
   bankId?: number
 }) {
   const searchParams = useSearchParams()
@@ -26,7 +26,7 @@ export default function Index({
     console.log('onChange:', value)
     if (value === 0) {
       const params = new URLSearchParams(searchParams)
-      params.delete('query')
+      params.delete('title')
       replace(`${pathname}?${params.toString()}`)
     }
     if (bankValue) {
@@ -39,10 +39,10 @@ export default function Index({
     }
   }
   useEffect(() => {
-    if (query && bankId) {
+    if (title && bankId) {
       setCurrentSteps(1)
     }
-  }, [query, bankId])
+  }, [title, bankId])
 
   const items = [
     {

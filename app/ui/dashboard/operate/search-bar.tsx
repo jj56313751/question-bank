@@ -15,14 +15,16 @@ export default function SearchBar() {
 
   const onSearch: SearchProps['onSearch'] = useDebouncedCallback(
     (value, _e, info) => {
+      const { source } = info
+      if (source === 'clear') return
       // console.log(info?.source, value)
       const params = new URLSearchParams(searchParams)
       // console.log('[params]-15', params.toString())
       // params.set('page', '1');
       if (value) {
-        params.set('query', value)
+        params.set('title', value)
       } else {
-        params.delete('query')
+        params.delete('title')
         messageApi.open({
           type: 'warning',
           content: '请输入题目关键字',
@@ -37,11 +39,12 @@ export default function SearchBar() {
     <>
       {contextHolder}
       <Search
-        defaultValue={searchParams.get('query')?.toString()}
+        defaultValue={searchParams.get('title')?.toString()}
         placeholder="输入题目关键字"
         size="middle"
         onSearch={onSearch}
         enterButton
+        allowClear
       />
     </>
   )

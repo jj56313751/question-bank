@@ -13,13 +13,13 @@ export default async function Page({
   searchParams,
 }: {
   searchParams?: {
-    query?: string
+    title?: string
     bankId?: number
   }
 }) {
   const banksRes = await fetchBanks({})
   const banks = (banksRes as any)?.list as Bank[]
-  const query = searchParams?.query || ''
+  const title = searchParams?.title || ''
   const bankId = searchParams?.bankId || 0
   // const currentPage = Number(searchParams?.page) || 1
 
@@ -27,10 +27,10 @@ export default async function Page({
     <>
       <OperateContent
         bankList={JSON.parse(JSON.stringify(banks))}
-        query={query}
+        title={title}
         bankId={bankId}
       />
-      {query ? <SearchResult query={query} bankId={bankId} /> : null}
+      {title ? <SearchResult title={title} bankId={bankId} /> : null}
     </>
   )
 }
