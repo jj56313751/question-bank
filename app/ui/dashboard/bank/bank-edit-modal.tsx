@@ -1,7 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 import { BankList } from '@/app/lib/types'
-import { Modal, Form, Input } from 'antd'
+import { Modal, Form, Input, Switch } from 'antd'
 const { TextArea } = Input
 
 export default function BankEditModal({
@@ -15,7 +15,7 @@ export default function BankEditModal({
   visible: boolean
   handleOk: any
   handleCancel: any
-  initialValues?: Pick<BankList, 'name' | 'description'>
+  initialValues?: Pick<BankList, 'name' | 'description' | 'isEnabled'>
 }) {
   const [form] = Form.useForm()
   const layout = {
@@ -59,6 +59,13 @@ export default function BankEditModal({
         </Form.Item>
         <Form.Item name="description" label="描述">
           <TextArea rows={4} />
+        </Form.Item>
+        <Form.Item name="isEnabled" label="描述">
+          <Switch
+            checkedChildren="启用"
+            unCheckedChildren="禁用"
+            defaultChecked
+          />
         </Form.Item>
       </Form>
     </Modal>

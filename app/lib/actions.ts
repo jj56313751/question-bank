@@ -12,6 +12,11 @@ const BankSchema = z.object({
     invalid_type_error: 'name must be a string',
   }),
   description: z.string().optional(),
+  isEnabled: z
+    .union([z.literal(0), z.literal(1)])
+    .refine((val) => val === 0 || val === 1, {
+      message: 'isEnabled must be either 0 or 1',
+    }),
   createdBy: z.number({
     required_error: 'createdBy is required',
     invalid_type_error: 'createdBy must be a number',
@@ -104,15 +109,15 @@ export async function createBank(formData: any) {
       message: 'Missing Fields. Failed to Create Bank.',
     }
   }
-  const { name, description, createdBy } = validatedFields.data
+  const { name, description, isEnabled, createdBy } = validatedFields.data
 
   try {
     await db.query(
       `
-        INSERT INTO banks (name, description, created_by)
-        VALUES (?, ?, ?)
+        INSERT INTO banks (name, description, is_enabled, created_by)
+        VALUES (?, ?, ?, ?)
       `,
-      [name, description || null, createdBy],
+      [name, description || null, isEnabled, createdBy],
     )
   } catch (error: any) {
     return {
@@ -138,16 +143,16 @@ export async function updateBank(id: number, formData: any) {
     }
   }
 
-  const { name, description, updatedBy } = validatedFields.data
+  const { name, description, isEnabled, updatedBy } = validatedFields.data
 
   try {
     await db.query(
       `
         UPDATE banks
-        SET name = ?, description = ?, updated_by = ?
+        SET name = ?, description = ?, is_enabled = ?, updated_by = ?
         WHERE id = ?;
       `,
-      [name, description || null, updatedBy, id],
+      [name, description || null, isEnabled, updatedBy, id],
     )
   } catch (error: any) {
     return {

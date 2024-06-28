@@ -1,11 +1,12 @@
 'use client'
 import { useState } from 'react'
-import { Button, Space, Table, message } from 'antd'
+import { Button, Space, Table, message, Tag } from 'antd'
 import type { TableProps } from 'antd'
 import { BankList } from '@/app/lib/types'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import BankEditModal from './bank-edit-modal'
 import { updateBank } from '@/app/lib/actions'
+import { bankStatusMap } from '@/app/lib/constant'
 import dayjs from 'dayjs'
 
 export default function ListTable({
@@ -74,6 +75,23 @@ export default function ListTable({
       width: 300,
     },
     {
+      title: '状态',
+      dataIndex: 'isEnabled',
+      key: 'isEnabled',
+      align: 'center',
+      width: 100,
+      render: (_, record) => (
+        <Tag
+          color={!!record.isEnabled ? 'success' : 'error'}
+          style={{
+            marginInlineEnd: 0,
+          }}
+        >
+          {bankStatusMap[record.isEnabled]}
+        </Tag>
+      ),
+    },
+    {
       title: '创建日期',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -89,7 +107,7 @@ export default function ListTable({
       align: 'center',
       width: 200,
       render: (_, record) =>
-        dayjs(record.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+        dayjs(record.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
       title: '操作',
@@ -112,7 +130,7 @@ export default function ListTable({
   const [visible, setVisible] = useState<boolean>(false)
   const [editId, setEditId] = useState<number>()
   const [initialValues, setInitialValues] =
-    useState<Pick<BankList, 'name' | 'description'>>()
+    useState<Pick<BankList, 'name' | 'description' | 'isEnabled'>>()
 
   const onEditClick = (record: BankList) => () => {
     // console.log('[record]-112', record)
@@ -120,6 +138,7 @@ export default function ListTable({
     setInitialValues({
       name: record.name,
       description: record.description,
+      isEnabled: record.isEnabled,
     })
     setVisible(true)
   }
@@ -130,11 +149,13 @@ export default function ListTable({
       .then(async (values: any) => {
         console.log('[values]-18', values)
         console.log('[editId]-18', editId)
+        values.isEnabled = +values.isEnabled
         const err = await updateBank(editId as number, values)
         if (!err) {
           messageApi.success('修改成功')
           setVisible(false)
         } else {
+          console.log('err', err)
           if (err.code === 'ER_DUP_ENTRY') {
             messageApi.error('题库名称已存在')
           } else {
@@ -162,6 +183,12 @@ export default function ListTable({
             ? Number(searchParams.get('pageNumber'))
             : undefined,
           defaultPageSize: searchParams.get('pageSize')
+            ? Number(searchParams.get('pageSize'))
+            : undefined,
+          current: searchParams.get('pageNumber')
+            ? Number(searchParams.get('pageNumber'))
+            : undefined,
+          pageSize: searchParams.get('pageSize')
             ? Number(searchParams.get('pageSize'))
             : undefined,
           showSizeChanger: true,

@@ -14,6 +14,7 @@ export default function BankCreate() {
       .validateFields()
       .then(async (values: any) => {
         // console.log('[values]-18', values)
+        values.isEnabled = +values.isEnabled
         const err = await createBank(values)
         // console.log('[err]-20', err)
         if (!err) {

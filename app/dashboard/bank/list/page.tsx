@@ -16,12 +16,16 @@ export default async function Page({
 }: {
   searchParams?: {
     name?: string
+    isEnabled?: number
     pageNumber?: number
     pageSize?: number
   }
 }) {
+  console.log('[searchParams]-29', searchParams)
+  // 获取数据
   const banks: any = await fetchBanks({
     name: searchParams?.name,
+    isEnabled: searchParams?.isEnabled,
     pageNumber: searchParams?.pageNumber,
     pageSize: searchParams?.pageSize,
   })
