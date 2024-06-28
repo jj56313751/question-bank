@@ -11,7 +11,7 @@ const navItems: MenuProps['items'] = [
   {
     key: 'operate',
     icon: React.createElement(FileSearchOutlined),
-    label: '搜题',
+    label: '快速搜题',
   },
   {
     key: 'bank',
