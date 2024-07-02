@@ -21,7 +21,7 @@ export default async function Page({
     pageSize?: number
   }
 }) {
-  console.log('[searchParams]-29', searchParams)
+  // console.log('[searchParams]-29', searchParams)
   // 获取数据
   const banks: any = await fetchBanks({
     name: searchParams?.name,

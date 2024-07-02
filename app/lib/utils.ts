@@ -15,3 +15,15 @@ export const mapToOptions = (map: Record<string | number | symbol, string>) => {
     value: key,
   }))
 }
+
+export function getKeyByValue(
+  object: Record<string | number | symbol, string>,
+  value: string,
+) {
+  for (const key in object) {
+    if (object[key] === value) {
+      return key
+    }
+  }
+  return null
+}
