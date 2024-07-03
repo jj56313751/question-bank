@@ -4,6 +4,7 @@ import db from '../../db/index'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { QuestionList } from '@/app/lib/types'
 
 const BankSchema = z.object({
   id: z.number(),
@@ -86,6 +87,9 @@ const DeleteQuestion = QuestionSchema.pick({
   id: true,
   bankId: true,
   deletedBy: true,
+})
+const ImportQuestion = QuestionSchema.pick({
+  bankId: true,
 })
 
 export async function createBank(formData: any) {
@@ -267,6 +271,41 @@ export async function deleteQuestion(id: number, bankId: number) {
       code: error.code || 0,
       errors: JSON.parse(JSON.stringify(error)),
       message: 'Database Error: Failed to Delete Question.',
+    }
+  }
+  const redirectUrl = headers().get('x-request-url') || ''
+  revalidatePath(redirectUrl)
+  redirect(redirectUrl)
+}
+
+export async function importQuestions(bankId: number, data: any[]) {
+  // TODO Add logged in userid
+  const createdBy = 1
+
+  let sql = `INSERT INTO questions 
+              (type, title, options, answer, analysis, bank_id, created_by) 
+              VALUES `
+
+  data.forEach((question, index) => {
+    const { type, title, options, answer, analysis } = question
+
+    sql += `(${type}, ${title ? `'${title}'` : null}, ${options ? `'${options}'` : null}, ${answer ? `'${answer}'` : null}, ${analysis ? `'${analysis}'` : null}, ${bankId}, ${createdBy})`
+    if (index < data.length - 1) {
+      sql += ','
+    }
+  })
+
+  sql += ` ON DUPLICATE KEY UPDATE updated_by = VALUES(created_by);`
+  // console.log('sql', sql)
+
+  try {
+    await db.query(sql)
+  } catch (error: any) {
+    console.log('[error]-307', error)
+    return {
+      code: error.code || 0,
+      errors: JSON.parse(JSON.stringify(error)),
+      message: 'Database Error: Failed to Import Question.',
     }
   }
   const redirectUrl = headers().get('x-request-url') || ''
