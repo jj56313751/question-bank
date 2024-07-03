@@ -21,8 +21,6 @@ const BankSchema = z.object({
     required_error: 'createdBy is required',
     invalid_type_error: 'createdBy must be a number',
   }),
-  createdAt: z.string(),
-  updatedAt: z.string(),
   updatedBy: z.number({
     required_error: 'updatedBy is required',
     invalid_type_error: 'updatedBy must be a number',
@@ -30,15 +28,11 @@ const BankSchema = z.object({
 })
 const CreateBank = BankSchema.omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
   updatedBy: true,
 })
 const UpdateBank = BankSchema.omit({
   id: true,
   createdBy: true,
-  createdAt: true,
-  updatedAt: true,
 })
 
 const QuestionSchema = z.object({
@@ -68,8 +62,6 @@ const QuestionSchema = z.object({
     required_error: 'createdBy is required',
     invalid_type_error: 'createdBy must be a number',
   }),
-  createdAt: z.string(),
-  updatedAt: z.string(),
   updatedBy: z.number({
     required_error: 'updatedBy is required',
     invalid_type_error: 'updatedBy must be a number',
@@ -81,16 +73,14 @@ const QuestionSchema = z.object({
 })
 const CreateQuestion = QuestionSchema.omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
   updatedBy: true,
+  deletedBy: true,
 })
 const UpdateQuestion = QuestionSchema.omit({
   id: true,
   bankId: true,
   createdBy: true,
-  createdAt: true,
-  updatedAt: true,
+  deletedBy: true,
 })
 const DeleteQuestion = QuestionSchema.pick({
   id: true,

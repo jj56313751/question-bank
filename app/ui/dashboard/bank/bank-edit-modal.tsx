@@ -31,6 +31,10 @@ export default function BankEditModal({
     if (initialValues) {
       // console.log('[initialValues]-35', initialValues)
       form.setFieldsValue(initialValues) // reset int value
+    } else {
+      form.setFieldsValue({
+        isEnabled: 1,
+      })
     }
   }, [initialValues, form])
 
@@ -61,11 +65,7 @@ export default function BankEditModal({
           <TextArea rows={4} />
         </Form.Item>
         <Form.Item name="isEnabled" label="描述">
-          <Switch
-            checkedChildren="启用"
-            unCheckedChildren="禁用"
-            defaultChecked
-          />
+          <Switch checkedChildren="启用" unCheckedChildren="禁用" />
         </Form.Item>
       </Form>
     </Modal>
