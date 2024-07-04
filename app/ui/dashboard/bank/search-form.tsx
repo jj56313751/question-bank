@@ -63,6 +63,7 @@ export default function SearchForm({
           } else {
             params.set(key, values[key])
           }
+          params.set('pageNumber', '1')
         }
         replace(`${pathname}?${params.toString()}`)
       })

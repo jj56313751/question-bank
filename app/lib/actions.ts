@@ -4,6 +4,7 @@ import db from '../../db/index'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { QuestionList } from '@/app/lib/types'
 
 const BankSchema = z.object({
   id: z.number(),
@@ -12,12 +13,15 @@ const BankSchema = z.object({
     invalid_type_error: 'name must be a string',
   }),
   description: z.string().optional(),
+  isEnabled: z
+    .union([z.literal(0), z.literal(1)])
+    .refine((val) => val === 0 || val === 1, {
+      message: 'isEnabled must be either 0 or 1',
+    }),
   createdBy: z.number({
     required_error: 'createdBy is required',
     invalid_type_error: 'createdBy must be a number',
   }),
-  createdAt: z.string(),
-  updatedAt: z.string(),
   updatedBy: z.number({
     required_error: 'updatedBy is required',
     invalid_type_error: 'updatedBy must be a number',
@@ -25,15 +29,11 @@ const BankSchema = z.object({
 })
 const CreateBank = BankSchema.omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
   updatedBy: true,
 })
 const UpdateBank = BankSchema.omit({
   id: true,
   createdBy: true,
-  createdAt: true,
-  updatedAt: true,
 })
 
 const QuestionSchema = z.object({
@@ -63,8 +63,6 @@ const QuestionSchema = z.object({
     required_error: 'createdBy is required',
     invalid_type_error: 'createdBy must be a number',
   }),
-  createdAt: z.string(),
-  updatedAt: z.string(),
   updatedBy: z.number({
     required_error: 'updatedBy is required',
     invalid_type_error: 'updatedBy must be a number',
@@ -76,21 +74,22 @@ const QuestionSchema = z.object({
 })
 const CreateQuestion = QuestionSchema.omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
   updatedBy: true,
+  deletedBy: true,
 })
 const UpdateQuestion = QuestionSchema.omit({
   id: true,
   bankId: true,
   createdBy: true,
-  createdAt: true,
-  updatedAt: true,
+  deletedBy: true,
 })
 const DeleteQuestion = QuestionSchema.pick({
   id: true,
   bankId: true,
   deletedBy: true,
+})
+const ImportQuestion = QuestionSchema.pick({
+  bankId: true,
 })
 
 export async function createBank(formData: any) {
@@ -104,15 +103,15 @@ export async function createBank(formData: any) {
       message: 'Missing Fields. Failed to Create Bank.',
     }
   }
-  const { name, description, createdBy } = validatedFields.data
+  const { name, description, isEnabled, createdBy } = validatedFields.data
 
   try {
     await db.query(
       `
-        INSERT INTO banks (name, description, created_by)
-        VALUES (?, ?, ?)
+        INSERT INTO banks (name, description, is_enabled, created_by)
+        VALUES (?, ?, ?, ?)
       `,
-      [name, description || null, createdBy],
+      [name, description || null, isEnabled, createdBy],
     )
   } catch (error: any) {
     return {
@@ -138,16 +137,16 @@ export async function updateBank(id: number, formData: any) {
     }
   }
 
-  const { name, description, updatedBy } = validatedFields.data
+  const { name, description, isEnabled, updatedBy } = validatedFields.data
 
   try {
     await db.query(
       `
         UPDATE banks
-        SET name = ?, description = ?, updated_by = ?
+        SET name = ?, description = ?, is_enabled = ?, updated_by = ?
         WHERE id = ?;
       `,
-      [name, description || null, updatedBy, id],
+      [name, description || null, isEnabled, updatedBy, id],
     )
   } catch (error: any) {
     return {
@@ -272,6 +271,41 @@ export async function deleteQuestion(id: number, bankId: number) {
       code: error.code || 0,
       errors: JSON.parse(JSON.stringify(error)),
       message: 'Database Error: Failed to Delete Question.',
+    }
+  }
+  const redirectUrl = headers().get('x-request-url') || ''
+  revalidatePath(redirectUrl)
+  redirect(redirectUrl)
+}
+
+export async function importQuestions(bankId: number, data: any[]) {
+  // TODO Add logged in userid
+  const createdBy = 1
+
+  let sql = `INSERT INTO questions 
+              (type, title, options, answer, analysis, bank_id, created_by) 
+              VALUES `
+
+  data.forEach((question, index) => {
+    const { type, title, options, answer, analysis } = question
+
+    sql += `(${type}, ${title ? `'${title}'` : null}, ${options ? `'${options}'` : null}, ${answer ? `'${answer}'` : null}, ${analysis ? `'${analysis}'` : null}, ${bankId}, ${createdBy})`
+    if (index < data.length - 1) {
+      sql += ','
+    }
+  })
+
+  sql += ` ON DUPLICATE KEY UPDATE updated_by = VALUES(created_by);`
+  // console.log('sql', sql)
+
+  try {
+    await db.query(sql)
+  } catch (error: any) {
+    console.log('[error]-307', error)
+    return {
+      code: error.code || 0,
+      errors: JSON.parse(JSON.stringify(error)),
+      message: 'Database Error: Failed to Import Question.',
     }
   }
   const redirectUrl = headers().get('x-request-url') || ''

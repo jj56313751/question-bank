@@ -1,7 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 import { BankList } from '@/app/lib/types'
-import { Modal, Form, Input } from 'antd'
+import { Modal, Form, Input, Switch } from 'antd'
 const { TextArea } = Input
 
 export default function BankEditModal({
@@ -15,7 +15,7 @@ export default function BankEditModal({
   visible: boolean
   handleOk: any
   handleCancel: any
-  initialValues?: Pick<BankList, 'name' | 'description'>
+  initialValues?: Pick<BankList, 'name' | 'description' | 'isEnabled'>
 }) {
   const [form] = Form.useForm()
   const layout = {
@@ -27,12 +27,16 @@ export default function BankEditModal({
     padding: '20px 10px',
   }
 
-  useEffect(() => {
-    if (initialValues) {
-      // console.log('[initialValues]-35', initialValues)
-      form.setFieldsValue(initialValues) // reset int value
-    }
-  }, [initialValues, form])
+  // useEffect(() => {
+  //   if (initialValues) {
+  //     // console.log('[initialValues]-35', initialValues)
+  //     form && form.setFieldsValue(initialValues) // reset int value
+  //   } else {
+  //     form && form.setFieldsValue({
+  //       isEnabled: 1,
+  //     })
+  //   }
+  // }, [initialValues, form])
 
   return (
     <Modal
@@ -46,8 +50,12 @@ export default function BankEditModal({
       <Form
         {...layout}
         form={form}
-        name="bank-edit"
-        initialValues={initialValues}
+        name={'bank-' + title}
+        initialValues={
+          initialValues || {
+            isEnabled: 1,
+          }
+        }
         style={formStyle}
       >
         <Form.Item
@@ -59,6 +67,9 @@ export default function BankEditModal({
         </Form.Item>
         <Form.Item name="description" label="描述">
           <TextArea rows={4} />
+        </Form.Item>
+        <Form.Item name="isEnabled" label="描述">
+          <Switch checkedChildren="启用" unCheckedChildren="禁用" />
         </Form.Item>
       </Form>
     </Modal>

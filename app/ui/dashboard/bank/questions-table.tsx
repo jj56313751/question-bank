@@ -177,6 +177,12 @@ export default function ListTable({
           defaultPageSize: searchParams.get('pageSize')
             ? Number(searchParams.get('pageSize'))
             : undefined,
+          current: searchParams.get('pageNumber')
+            ? Number(searchParams.get('pageNumber'))
+            : undefined,
+          pageSize: searchParams.get('pageSize')
+            ? Number(searchParams.get('pageSize'))
+            : undefined,
           showSizeChanger: true,
           onChange: onPaginationChange,
           total: total,

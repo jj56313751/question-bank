@@ -15,6 +15,7 @@ async function seedUsers(client) {
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
+        is_enabled BOOLEAN NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -106,10 +107,10 @@ async function seedQuestions(client) {
       CREATE TABLE IF NOT EXISTS questions (
         id INT AUTO_INCREMENT PRIMARY KEY,
         type INT NULL,
-        title VARCHAR(255) NOT NULL,
-        options VARCHAR(255) NULL,
-        answer VARCHAR(255) NULL,
-        analysis VARCHAR(255) NULL,
+        title TEXT NOT NULL,
+        options TEXT NULL,
+        answer TEXT NULL,
+        analysis TEXT NULL,
         bank_id INT NOT NULL,
         FOREIGN KEY (bank_id) REFERENCES banks(id),
         created_by INT NOT NULL,
@@ -120,7 +121,8 @@ async function seedQuestions(client) {
         FOREIGN KEY (updated_by) REFERENCES users(id),
         deleted_at TIMESTAMP NULL DEFAULT NULL,
         deleted_by INT NULL,
-        FOREIGN KEY (deleted_by) REFERENCES users(id)
+        FOREIGN KEY (deleted_by) REFERENCES users(id),
+        UNIQUE KEY unique_title_bank_id (title(255), bank_id)
       );
     `)
 

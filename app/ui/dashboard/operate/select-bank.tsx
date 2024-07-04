@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 import { Button, Form, Select } from 'antd'
 import type { Bank } from '@/app/lib/definitions'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
@@ -35,9 +36,11 @@ export default function SelectBank({
   const defaultValue =
     searchParams.get('bankId') && Number(searchParams.get('bankId'))
 
-  if (defaultValue) {
-    bankChange(defaultValue)
-  }
+  useEffect(() => {
+    if (defaultValue) {
+      bankChange(defaultValue)
+    }
+  }, [defaultValue, bankChange]) // 依赖数组中的值变化时才会执行
 
   const handleNext = (e: any) => {
     ;(bankValue || defaultValue) && next()
@@ -65,6 +68,10 @@ export default function SelectBank({
       >
         <Select
           style={{ flex: 1 }}
+          showSearch
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
           onChange={handleBankChange}
           options={data}
           placeholder="选择题库"

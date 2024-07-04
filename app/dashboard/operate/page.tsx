@@ -17,7 +17,9 @@ export default async function Page({
     bankId?: number
   }
 }) {
-  const banksRes = await fetchBanks({})
+  const banksRes = await fetchBanks({
+    isEnabled: 1,
+  })
   const banks = (banksRes as any)?.list as Bank[]
   const title = searchParams?.title || ''
   const bankId = searchParams?.bankId || 0

@@ -20,6 +20,7 @@ export interface Bank extends CommonDate {
   id: number
   name: string
   description: string
+  is_enabled: number
   created_by: number
   updated_by?: number
   deleted_by?: number

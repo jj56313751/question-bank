@@ -1,12 +1,15 @@
 'use client'
 import { useState } from 'react'
-import { Button, Space, Table, message } from 'antd'
+import { Button, Space, Table, message, Tag } from 'antd'
 import type { TableProps } from 'antd'
 import { BankList } from '@/app/lib/types'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import BankEditModal from './bank-edit-modal'
-import { updateBank } from '@/app/lib/actions'
+import BankImportModal from './bank-import-modal'
+import { updateBank, importQuestions } from '@/app/lib/actions'
+import { bankStatusMap } from '@/app/lib/constant'
 import dayjs from 'dayjs'
+import { objectHavingKeys } from '@/app/lib/utils'
 
 export default function ListTable({
   dataSource,
@@ -38,6 +41,7 @@ export default function ListTable({
   }
 
   const onNameClick = (id: string) => () => {
+    console.log('[id]-44', id)
     push(`/dashboard/bank/questions?bankId=${id}`)
   }
 
@@ -74,6 +78,23 @@ export default function ListTable({
       width: 300,
     },
     {
+      title: '状态',
+      dataIndex: 'isEnabled',
+      key: 'isEnabled',
+      align: 'center',
+      width: 100,
+      render: (_, record) => (
+        <Tag
+          color={!!record.isEnabled ? 'success' : 'error'}
+          style={{
+            marginInlineEnd: 0,
+          }}
+        >
+          {bankStatusMap[record.isEnabled]}
+        </Tag>
+      ),
+    },
+    {
       title: '创建日期',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -89,7 +110,7 @@ export default function ListTable({
       align: 'center',
       width: 200,
       render: (_, record) =>
-        dayjs(record.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+        dayjs(record.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
       title: '操作',
@@ -103,38 +124,43 @@ export default function ListTable({
           <Button type="link" onClick={onEditClick(record)}>
             编辑
           </Button>
-          <Button type="link">导入</Button>
+          <Button type="link" onClick={onImportClick(record)}>
+            导入
+          </Button>
         </Space>
       ),
     },
   ]
 
-  const [visible, setVisible] = useState<boolean>(false)
+  const [editVisible, setEditVisible] = useState<boolean>(false)
   const [editId, setEditId] = useState<number>()
-  const [initialValues, setInitialValues] =
-    useState<Pick<BankList, 'name' | 'description'>>()
+  const [editInitialValues, setEditInitialValues] =
+    useState<Pick<BankList, 'name' | 'description' | 'isEnabled'>>()
 
   const onEditClick = (record: BankList) => () => {
     // console.log('[record]-112', record)
     setEditId(record.id)
-    setInitialValues({
+    setEditInitialValues({
       name: record.name,
       description: record.description,
+      isEnabled: record.isEnabled,
     })
-    setVisible(true)
+    setEditVisible(true)
   }
 
-  const handleOk = async (form: any) => {
+  const handleEditOk = async (form: any) => {
     form
       .validateFields()
       .then(async (values: any) => {
-        console.log('[values]-18', values)
-        console.log('[editId]-18', editId)
+        // console.log('[values]-18', values)
+        // console.log('[editId]-18', editId)
+        values.isEnabled = +values.isEnabled
         const err = await updateBank(editId as number, values)
         if (!err) {
           messageApi.success('修改成功')
-          setVisible(false)
+          setEditVisible(false)
         } else {
+          console.log('err', err)
           if (err.code === 'ER_DUP_ENTRY') {
             messageApi.error('题库名称已存在')
           } else {
@@ -143,6 +169,56 @@ export default function ListTable({
         }
       })
       .catch((err: any) => console.log('err', err))
+  }
+
+  const [importVisible, setImportVisible] = useState<boolean>(false)
+
+  const onImportClick = (record: BankList) => () => {
+    setEditId(record.id)
+    setImportVisible(true)
+  }
+  const handleImport = async (fileList: any) => {
+    // console.log('[fileList]-173', fileList)
+    try {
+      const file = fileList[0]
+      const arrayBuffer = await file.arrayBuffer()
+      const text = new TextDecoder().decode(arrayBuffer)
+      const jsonContent = JSON.parse(text)
+      console.log('[jsonContent]-184', jsonContent)
+      const wellFormed =
+        Array.isArray(jsonContent) &&
+        jsonContent.every((item: any) =>
+          objectHavingKeys(item, [
+            'type',
+            'title',
+            'options',
+            'answer',
+            'analysis',
+          ]),
+        )
+      if (!wellFormed) {
+        return messageApi.error('导入文件格式错误')
+      }
+      await new Promise((resolve, reject) => {
+        importQuestions(editId as number, jsonContent)
+          .then((err) => {
+            if (!err) {
+              messageApi.success('导入成功')
+              resolve(true)
+            } else {
+              messageApi.error(err.message)
+              reject(err)
+            }
+          })
+          .catch((err: any) => {
+            console.log('err', err)
+            messageApi.error(err.message)
+            reject(err)
+          })
+      })
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -164,6 +240,12 @@ export default function ListTable({
           defaultPageSize: searchParams.get('pageSize')
             ? Number(searchParams.get('pageSize'))
             : undefined,
+          current: searchParams.get('pageNumber')
+            ? Number(searchParams.get('pageNumber'))
+            : undefined,
+          pageSize: searchParams.get('pageSize')
+            ? Number(searchParams.get('pageSize'))
+            : undefined,
           showSizeChanger: true,
           onChange: onPaginationChange,
           total: total,
@@ -171,10 +253,15 @@ export default function ListTable({
       />
       <BankEditModal
         title="编辑"
-        initialValues={initialValues}
-        visible={visible}
-        handleOk={handleOk}
-        handleCancel={() => setVisible(false)}
+        initialValues={editInitialValues}
+        visible={editVisible}
+        handleOk={handleEditOk}
+        handleCancel={() => setEditVisible(false)}
+      />
+      <BankImportModal
+        visible={importVisible}
+        onUpload={handleImport}
+        handleCancel={() => setImportVisible(false)}
       />
     </>
   )

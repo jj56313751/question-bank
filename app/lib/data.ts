@@ -5,20 +5,25 @@ import type { Page, BankList, QuestionList } from './types'
 export async function fetchBanks({
   id,
   name,
+  isEnabled,
   pageNumber = 1,
   pageSize = 999999,
-}: { id?: number; name?: string } & Page): Promise<
+}: { id?: number; name?: string; isEnabled?: number } & Page): Promise<
   { total: number; list: BankList[] } | unknown
 > {
   try {
     let sql = 'WHERE deleted_at IS NULL'
 
-    if (id) {
+    if (id !== undefined) {
       sql += ` AND bank.id = ${id}`
     }
 
-    if (name) {
+    if (name !== undefined) {
       sql += ` AND bank.name LIKE '%${name}%'`
+    }
+
+    if (isEnabled !== undefined) {
+      sql += ` AND bank.is_enabled = ${isEnabled}`
     }
 
     const [countRows] = await db.query(
@@ -33,6 +38,7 @@ export async function fetchBanks({
         bank.id,
         bank.name,
         bank.description,
+        bank.is_enabled isEnabled,
         bank.created_by createdBy,
         bank.created_at createdAt,
         bank.updated_at updatedAt,
