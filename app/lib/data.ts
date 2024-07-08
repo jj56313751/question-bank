@@ -1,6 +1,6 @@
 // import { toCamelCase } from './utils'
 import db from '../../db/index'
-import type { Page, BankList, QuestionList } from './types'
+import type { Page, BankList, QuestionList, UserList } from './types'
 
 export async function fetchBanks({
   id,
@@ -156,12 +156,18 @@ export async function fetchQuestions({
   }
 }
 
-// export async function getUser(email: string) {
-//   try {
-//     const user = await sql`SELECT * FROM users WHERE email=${email}`
-//     return user.rows[0] as User
-//   } catch (error) {
-//     console.error('Failed to fetch user:', error)
-//     throw new Error('Failed to fetch user.')
-//   }
-// }
+export async function getUser(email: string): Promise<UserList[] | unknown> {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        id,
+        name,
+        email,
+        password
+      FROM users WHERE email='${email}'`)
+    return rows as UserList[]
+  } catch (error) {
+    console.error('Failed to fetch user:', error)
+    throw new Error('Failed to fetch user.')
+  }
+}
