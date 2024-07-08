@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { QuestionList } from '@/app/lib/types'
+import { signIn, signOut } from '@/auth'
+import { AuthError } from 'next-auth'
 
 const BankSchema = z.object({
   id: z.number(),
@@ -156,6 +158,7 @@ export async function updateBank(id: number, formData: any) {
     }
   }
   const redirectUrl = headers().get('x-request-url') || ''
+  console.log('[redirectUrl]-161', redirectUrl)
   revalidatePath(redirectUrl)
   redirect(redirectUrl)
 }
@@ -311,4 +314,32 @@ export async function importQuestions(bankId: number, data: any[]) {
   const redirectUrl = headers().get('x-request-url') || ''
   revalidatePath(redirectUrl)
   redirect(redirectUrl)
+}
+
+export async function authenticate(params: any) {
+  try {
+    await signIn('credentials', params)
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.'
+        default:
+          return 'Something went wrong.'
+      }
+    }
+    throw error
+  }
+}
+
+export async function signOutAction() {
+  try {
+    await signOut()
+  } catch (error) {
+    console.log('[error]-339', error)
+    if (error instanceof AuthError) {
+      console.log('[error.type]-339', error.type)
+    }
+    throw error
+  }
 }

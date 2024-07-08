@@ -38,7 +38,7 @@ const navItems: MenuProps['items'] = [
   // {
   //   key: 'logout',
   //   icon: React.createElement(LogoutOutlined),
-  //   label: 'Logout',
+  //   label: '退出登录',
   // },
 ]
 
