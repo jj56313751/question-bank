@@ -5,7 +5,7 @@ import { z } from 'zod'
 import bcrypt from 'bcrypt'
 import { getUser } from '@/app/lib/data'
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { signIn, signOut, auth } = NextAuth({
   // debug: true,
   ...authConfig,
   providers: [
