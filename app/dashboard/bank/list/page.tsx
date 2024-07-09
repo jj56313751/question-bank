@@ -26,8 +26,8 @@ export default async function Page({
   const banks: any = await fetchBanks({
     name: searchParams?.name,
     isEnabled: searchParams?.isEnabled,
-    pageNumber: searchParams?.pageNumber,
-    pageSize: searchParams?.pageSize,
+    pageNumber: searchParams?.pageNumber || 1,
+    pageSize: searchParams?.pageSize || 10,
   })
   const dataSource = banks.list as BankList[]
   const total = banks.total

@@ -7,7 +7,7 @@ export async function fetchBanks({
   name,
   isEnabled,
   pageNumber = 1,
-  pageSize = 999999,
+  pageSize = 10,
 }: { id?: number; name?: string; isEnabled?: number } & Page): Promise<
   { total: number; list: BankList[] } | unknown
 > {
@@ -52,6 +52,7 @@ export async function fetchBanks({
           COUNT(*) AS questions_count
         FROM 
           questions
+        WHERE deleted_at IS NULL
         GROUP BY 
           bank_id
       ) question ON bank.id = question.bank_id
@@ -103,7 +104,7 @@ export async function fetchQuestions({
   title,
   type,
   pageNumber = 1,
-  pageSize = 999999,
+  pageSize = 10,
 }: { bankId?: number; title?: string; type?: number } & Page): Promise<
   { total: number; list: QuestionList[] } | unknown
 > {
