@@ -7,6 +7,12 @@ const users = [
     email: 'admin@qq.com',
     password: 'admin123456',
   },
+  {
+    id: 2,
+    name: 'test',
+    email: 'test@qq.com',
+    password: '12345678',
+  },
 ]
 
 const banks = [

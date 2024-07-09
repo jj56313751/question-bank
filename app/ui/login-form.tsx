@@ -1,6 +1,6 @@
 'use client'
 import { Button, Form, Input, message } from 'antd'
-import { MailOutlined, KeyOutlined } from '@ant-design/icons'
+import { UserOutlined, KeyOutlined } from '@ant-design/icons'
 import { authenticate } from '@/app/lib/actions'
 
 export default function LoginForm() {
@@ -34,12 +34,12 @@ export default function LoginForm() {
         layout="vertical"
       >
         <Form.Item
-          label="邮箱"
-          name="email"
+          label="账号/邮箱"
+          name="name"
           validateTrigger="onBlur"
-          rules={[{ required: true, message: '请输入邮箱' }]}
+          rules={[{ required: true, message: '请输入账号或邮箱' }]}
         >
-          <Input placeholder="请输入邮箱" prefix={<MailOutlined />} />
+          <Input placeholder="请输入账号或邮箱" prefix={<UserOutlined />} />
         </Form.Item>
         <Form.Item
           label="密码"

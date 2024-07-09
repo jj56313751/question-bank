@@ -157,7 +157,9 @@ export async function fetchQuestions({
   }
 }
 
-export async function getUser(email: string): Promise<UserList[] | unknown> {
+export async function getUserByEmail(
+  email: string,
+): Promise<UserList[] | unknown> {
   try {
     const [rows] = await db.query(`
       SELECT 
@@ -166,6 +168,26 @@ export async function getUser(email: string): Promise<UserList[] | unknown> {
         email,
         password
       FROM users WHERE email='${email}'`)
+    return rows as UserList[]
+  } catch (error) {
+    console.error('Failed to fetch user:', error)
+    throw new Error('Failed to fetch user.')
+  }
+}
+
+export async function getUserByNameOrEmail(
+  name: string,
+): Promise<UserList[] | unknown> {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        id,
+        name,
+        email,
+        password
+      FROM users 
+      WHERE name='${name}'
+        OR email='${name}'`)
     return rows as UserList[]
   } catch (error) {
     console.error('Failed to fetch user:', error)
