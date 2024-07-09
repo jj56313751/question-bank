@@ -5,10 +5,10 @@ const questionTypes = Object.values(questionTypesMap)
 
 export const formatDocument = (document: string): string => {
   const removeRegArray = [
-    RegExp(
-      `^(${questionTypes.join('|')}).*`,
-      'gm',
-    ) /* XX题（共XX题，合计X.X分） */,
+    // RegExp(
+    //   `^(${questionTypes.join('|')}).*`,
+    //   'gm',
+    // ) /* XX题（共XX题，合计X.X分） */,
     /正确题目.*共.*道题目\n/gm /* 正确题目题XX共XX道题目 */,
     /回答错误.*\n/gm,
     /回答正确.*\n/gm,
@@ -122,7 +122,10 @@ export const removeDuplicateParseToJson = (document: string): any[] => {
     }
 
     if (isType(line)) {
-      currentQuestion !== null && insertItem(currentQuestion)
+      currentQuestion !== null &&
+        currentQuestion.type &&
+        currentQuestion.title &&
+        insertItem(currentQuestion)
       currentQuestion = new QuestionItem({})
       currentQuestion.type = Number(getKeyByValue(questionTypesMap, line))
       process = 2
