@@ -27,8 +27,8 @@ export default async function Page({
     bankId: searchParams?.bankId,
     title: searchParams?.title,
     type: searchParams?.type,
-    pageNumber: searchParams?.pageNumber,
-    pageSize: searchParams?.pageSize,
+    pageNumber: searchParams?.pageNumber || 1,
+    pageSize: searchParams?.pageSize || 10,
   })
   const dataSource = questions.list as QuestionList[]
   const total = questions.total

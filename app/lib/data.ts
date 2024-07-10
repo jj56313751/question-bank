@@ -7,7 +7,7 @@ export async function fetchBanks({
   name,
   isEnabled,
   pageNumber = 1,
-  pageSize = 999999,
+  pageSize = 10,
 }: { id?: number; name?: string; isEnabled?: number } & Page): Promise<
   { total: number; list: BankList[] } | unknown
 > {
@@ -52,6 +52,7 @@ export async function fetchBanks({
           COUNT(*) AS questions_count
         FROM 
           questions
+        WHERE deleted_at IS NULL
         GROUP BY 
           bank_id
       ) question ON bank.id = question.bank_id
@@ -103,7 +104,7 @@ export async function fetchQuestions({
   title,
   type,
   pageNumber = 1,
-  pageSize = 999999,
+  pageSize = 10,
 }: { bankId?: number; title?: string; type?: number } & Page): Promise<
   { total: number; list: QuestionList[] } | unknown
 > {
@@ -156,7 +157,9 @@ export async function fetchQuestions({
   }
 }
 
-export async function getUser(email: string): Promise<UserList[] | unknown> {
+export async function getUserByEmail(
+  email: string,
+): Promise<UserList[] | unknown> {
   try {
     const [rows] = await db.query(`
       SELECT 
@@ -165,6 +168,26 @@ export async function getUser(email: string): Promise<UserList[] | unknown> {
         email,
         password
       FROM users WHERE email='${email}'`)
+    return rows as UserList[]
+  } catch (error) {
+    console.error('Failed to fetch user:', error)
+    throw new Error('Failed to fetch user.')
+  }
+}
+
+export async function getUserByNameOrEmail(
+  name: string,
+): Promise<UserList[] | unknown> {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        id,
+        name,
+        email,
+        password
+      FROM users 
+      WHERE name='${name}'
+        OR email='${name}'`)
     return rows as UserList[]
   } catch (error) {
     console.error('Failed to fetch user:', error)

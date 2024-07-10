@@ -25,6 +25,8 @@ export const authConfig = {
       } else if (isLoggedIn) {
         return Response.redirect(new URL('/dashboard', nextUrl))
       }
+      // other pages can view directly
+      return true
     },
   },
   providers: [], // Add providers with an empty array for now

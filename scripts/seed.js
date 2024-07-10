@@ -20,6 +20,7 @@ async function seedUsers(client) {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP NULL DEFAULT NULL,
         deleted_by INT NULL,
+        UNIQUE KEY unique_name (name),
         UNIQUE KEY unique_email (email)
       );
     `)
@@ -30,7 +31,7 @@ async function seedUsers(client) {
     const insertedUsers = await Promise.all(
       users.map(async (user) => {
         const hashedPassword = await bcrypt.hash(user.password, 10)
-        console.log('[hashedPassword]-30', hashedPassword)
+        // console.log('[hashedPassword]-30', hashedPassword)
         return client.query(`
           INSERT INTO users (id, name, email, password)
           VALUES (${user.id}, '${user.name}', '${user.email}', '${hashedPassword}')
@@ -59,7 +60,7 @@ async function seedBanks(client) {
     const [createTable] = await client.query(`
       CREATE TABLE IF NOT EXISTS banks (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
         description VARCHAR(255) NULL,
         created_by INT NOT NULL,
         FOREIGN KEY (created_by) REFERENCES users(id),
@@ -69,7 +70,8 @@ async function seedBanks(client) {
         FOREIGN KEY (updated_by) REFERENCES users(id),
         deleted_at TIMESTAMP NULL DEFAULT NULL,
         deleted_by INT NULL,
-        FOREIGN KEY (deleted_by) REFERENCES users(id)
+        FOREIGN KEY (deleted_by) REFERENCES users(id),
+        UNIQUE KEY unique_name (name)
       );
     `)
 

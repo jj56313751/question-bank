@@ -3,7 +3,7 @@ import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
-import { getUser } from '@/app/lib/data'
+import { getUserByNameOrEmail } from '@/app/lib/data'
 
 export const { signIn, signOut, auth } = NextAuth({
   // debug: true,
@@ -12,13 +12,14 @@ export const { signIn, signOut, auth } = NextAuth({
     Credentials({
       async authorize(credentials) {
         const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
+          // .object({ email: z.string().email(), password: z.string().min(6) })
+          .object({ name: z.string(), password: z.string().min(6) })
           .safeParse(credentials)
 
         if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data
+          const { name, password } = parsedCredentials.data
           try {
-            const userRes: any = await getUser(email)
+            const userRes: any = await getUserByNameOrEmail(name)
             if (!userRes || !userRes.length) return null
             const user = userRes[0]
 
