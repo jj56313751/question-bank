@@ -1,4 +1,3 @@
-
 const db = require('../db/index.js')
 // import db from '../db/index'
 
@@ -19,7 +18,6 @@ async function seedUsers(client) {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP NULL DEFAULT NULL,
-        deleted_by INT NULL,
         UNIQUE KEY unique_name (name),
         UNIQUE KEY unique_email (email)
       );
@@ -33,8 +31,8 @@ async function seedUsers(client) {
         const hashedPassword = await bcrypt.hash(user.password, 10)
         // console.log('[hashedPassword]-30', hashedPassword)
         return client.query(`
-          INSERT INTO users (id, name, email, password)
-          VALUES (${user.id}, '${user.name}', '${user.email}', '${hashedPassword}')
+          INSERT INTO users (id, name, email, password, is_enabled)
+          VALUES (${user.id}, '${user.name}', '${user.email}', '${hashedPassword}', ${user.is_enabled})
           ON DUPLICATE KEY UPDATE
             name = VALUES(name),
             email = VALUES(email),
@@ -62,6 +60,7 @@ async function seedBanks(client) {
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         description VARCHAR(255) NULL,
+        is_enabled BOOLEAN NOT NULL,
         created_by INT NOT NULL,
         FOREIGN KEY (created_by) REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -81,8 +80,8 @@ async function seedBanks(client) {
     const insertedBanks = await Promise.all(
       banks.map(async (bank) => {
         return client.query(`
-          INSERT INTO banks (id, name, description, created_by)
-          VALUES (${bank.id}, '${bank.name}', '${bank.description}', ${bank.created_by})
+          INSERT INTO banks (id, name, description, is_enabled, created_by)
+          VALUES (${bank.id}, '${bank.name}', ${bank.is_enabled}, '${bank.description}', ${bank.created_by})
           ON DUPLICATE KEY UPDATE
             name = VALUES(name),
             description = VALUES(description),

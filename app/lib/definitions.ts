@@ -14,6 +14,7 @@ export interface User extends CommonDate {
   name: string
   email: string
   password: string
+  is_enabled: number
 }
 
 export interface Bank extends CommonDate {

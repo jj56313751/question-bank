@@ -13,54 +13,62 @@ export async function fetchBanks({
 > {
   try {
     let sql = 'WHERE deleted_at IS NULL'
+    const params: any[] = []
 
     if (id !== undefined) {
-      sql += ` AND bank.id = ${id}`
+      sql += ` AND bank.id = ?`
+      params.push(id)
     }
 
     if (name !== undefined) {
-      sql += ` AND bank.name LIKE '%${name}%'`
+      sql += ` AND bank.name LIKE ?`
+      params.push(name)
     }
 
     if (isEnabled !== undefined) {
-      sql += ` AND bank.is_enabled = ${isEnabled}`
+      sql += ` AND bank.is_enabled = ?`
+      params.push(isEnabled)
     }
 
     const [countRows] = await db.query(
       `SELECT COUNT(*) AS total_count FROM banks bank ${sql}`,
+      params,
     )
 
-    const offset = (pageNumber - 1) * pageSize
-    const limit = pageSize
+    const offset = (pageNumber - 1) * Number(pageSize)
+    const limit = Number(pageSize)
 
-    const [rows] = await db.query(`
-      SELECT 
-        bank.id,
-        bank.name,
-        bank.description,
-        bank.is_enabled isEnabled,
-        bank.created_by createdBy,
-        bank.created_at createdAt,
-        bank.updated_at updatedAt,
-        bank.updated_by updatedBy,
-        IFNULL(question.questions_count, 0) AS total
-      FROM 
-        banks bank
-      LEFT JOIN (
+    const [rows] = await db.query(
+      `
         SELECT 
-          bank_id, 
-          COUNT(*) AS questions_count
+          bank.id,
+          bank.name,
+          bank.description,
+          bank.is_enabled isEnabled,
+          bank.created_by createdBy,
+          bank.created_at createdAt,
+          bank.updated_at updatedAt,
+          bank.updated_by updatedBy,
+          IFNULL(question.questions_count, 0) AS total
         FROM 
-          questions
-        WHERE deleted_at IS NULL
-        GROUP BY 
-          bank_id
-      ) question ON bank.id = question.bank_id
-      ${sql}
-      ORDER BY 
-        bank.id
-      LIMIT ${limit} OFFSET ${offset}
-    `)
+          banks bank
+        LEFT JOIN (
+          SELECT 
+            bank_id, 
+            COUNT(*) AS questions_count
+          FROM 
+            questions
+          WHERE deleted_at IS NULL
+          GROUP BY 
+            bank_id
+        ) question ON bank.id = question.bank_id
+        ${sql}
+        ORDER BY 
+          bank.id
+        LIMIT ? OFFSET ?
+      `,
+      [...params, limit, offset],
+    )
 
     return {
       total: (countRows as any[])[0].total_count,
@@ -76,22 +84,25 @@ export async function fetchQuestionsByBankId(
   id: number,
 ): Promise<QuestionList[] | unknown> {
   try {
-    const [rows] = await db.query(`
-      SELECT 
-        id,
-        type,
-        title,
-        options,
-        answer,
-        analysis,
-        bank_id bankId,
-        created_by createdBy,
-        created_at createdAt,
-        updated_at updatedAt,
-        updated_by updatedBy
-      FROM questions
-      WHERE bank_id = ${id}
-    `)
+    const [rows] = await db.query(
+      `
+        SELECT 
+          id,
+          type,
+          title,
+          options,
+          answer,
+          analysis,
+          bank_id bankId,
+          created_by createdBy,
+          created_at createdAt,
+          updated_at updatedAt,
+          updated_by updatedBy
+        FROM questions
+        WHERE bank_id = ?
+      `,
+      [id],
+    )
     return rows as QuestionList[]
   } catch (error) {
     console.error('Database Error:', error)
@@ -110,43 +121,51 @@ export async function fetchQuestions({
 > {
   try {
     let sql = 'WHERE deleted_at IS NULL'
+    const params: any[] = []
 
     if (bankId) {
-      sql += ` AND bank_id = ${bankId}`
+      sql += ` AND bank_id = ?`
+      params.push(bankId)
     }
 
     if (title) {
-      sql += ` AND (title LIKE '%${title}%' OR options LIKE '%${title}%')`
+      sql += ` AND (title LIKE ? OR options LIKE ?)`
+      params.push(title, title)
     }
 
     if (type) {
-      sql += ` AND type = ${type}`
+      sql += ` AND type = ?`
+      params.push(type)
     }
 
     const [countRows] = await db.query(
       `SELECT COUNT(*) AS total_count FROM questions ${sql}`,
+      params,
     )
 
-    const offset = (pageNumber - 1) * pageSize
-    const limit = pageSize
-    const [rows] = await db.query(`
-      SELECT 
-        id,
-        type,
-        title,
-        options,
-        answer,
-        analysis,
-        bank_id bankId,
-        created_by createdBy,
-        created_at createdAt,
-        updated_at updatedAt,
-        updated_by updatedBy
-      FROM questions
-      ${sql}
-      ORDER BY id
-      LIMIT ${limit} OFFSET ${offset}
-    `)
+    const offset = (pageNumber - 1) * Number(pageSize)
+    const limit = Number(pageSize)
+    const [rows] = await db.query(
+      `
+        SELECT 
+          id,
+          type,
+          title,
+          options,
+          answer,
+          analysis,
+          bank_id bankId,
+          created_by createdBy,
+          created_at createdAt,
+          updated_at updatedAt,
+          updated_by updatedBy
+        FROM questions
+        ${sql}
+        ORDER BY id
+        LIMIT ? OFFSET ?
+      `,
+      [...params, limit, offset],
+    )
     return {
       total: (countRows as any)[0].total_count,
       list: rows as QuestionList[],
@@ -161,13 +180,17 @@ export async function getUserByEmail(
   email: string,
 ): Promise<UserList[] | unknown> {
   try {
-    const [rows] = await db.query(`
-      SELECT 
-        id,
-        name,
-        email,
-        password
-      FROM users WHERE email='${email}'`)
+    const [rows] = await db.query(
+      `
+        SELECT 
+          id,
+          name,
+          email,
+          password
+        FROM users WHERE email=?
+      `,
+      [email],
+    )
     return rows as UserList[]
   } catch (error) {
     console.error('Failed to fetch user:', error)
@@ -179,15 +202,19 @@ export async function getUserByNameOrEmail(
   name: string,
 ): Promise<UserList[] | unknown> {
   try {
-    const [rows] = await db.query(`
-      SELECT 
-        id,
-        name,
-        email,
-        password
-      FROM users 
-      WHERE name='${name}'
-        OR email='${name}'`)
+    const [rows] = await db.query(
+      `
+        SELECT 
+          id,
+          name,
+          email,
+          password
+        FROM users 
+        WHERE name=?
+          OR email=?
+      `,
+      [name, name],
+    )
     return rows as UserList[]
   } catch (error) {
     console.error('Failed to fetch user:', error)

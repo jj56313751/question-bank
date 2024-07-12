@@ -60,3 +60,5 @@ export const fileTypeMap = <Record<string, string>>{
   ini: 'text/ini',
   conf: 'text/ini',
 }
+
+export const intPassword = '123456788'
