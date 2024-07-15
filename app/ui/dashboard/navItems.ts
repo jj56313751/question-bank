@@ -4,6 +4,7 @@ import {
   FileSearchOutlined,
   DatabaseOutlined,
   ToolOutlined,
+  SettingOutlined,
   LogoutOutlined,
 } from '@ant-design/icons'
 
@@ -32,6 +33,17 @@ const navItems: MenuProps['items'] = [
       {
         key: 'format',
         label: '文档格式化',
+      },
+    ],
+  },
+  {
+    key: 'settings',
+    icon: React.createElement(SettingOutlined),
+    label: '设置',
+    children: [
+      {
+        key: 'users',
+        label: '用户管理',
       },
     ],
   },

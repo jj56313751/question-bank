@@ -6,11 +6,22 @@ export const searchItems: SearchFormItem[] = [
   {
     type: 'input',
     formItemProps: {
-      label: '题库',
+      label: '用户姓名',
       name: 'name',
     },
     props: {
-      placeholder: '请输入题库关键字',
+      placeholder: '请输入姓名关键字',
+      allowClear: true,
+    },
+  },
+  {
+    type: 'input',
+    formItemProps: {
+      label: '邮箱',
+      name: 'email',
+    },
+    props: {
+      placeholder: '请输入邮箱关键字',
       allowClear: true,
     },
   },

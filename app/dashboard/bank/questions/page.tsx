@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react'
 import { Metadata } from 'next'
-import SearchForm from '@/app/ui/dashboard/bank/search-form'
+import SearchForm from '@/app/ui/dashboard/search-form'
 import { searchItems } from './config'
 import QuestionsTable from '@/app/ui/dashboard/bank/questions-table'
 import { fetchQuestions, fetchBanks } from '@/app/lib/data'

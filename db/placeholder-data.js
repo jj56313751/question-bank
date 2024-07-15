@@ -6,12 +6,14 @@ const users = [
     name: 'admin',
     email: 'admin@qq.com',
     password: 'admin123456',
+    is_enabled: 1,
   },
   {
     id: 2,
     name: 'test',
     email: 'test@qq.com',
-    password: '12345678',
+    password: '123456788',
+    is_enabled: 1,
   },
 ]
 
@@ -20,12 +22,14 @@ const banks = [
     id: 1,
     name: '测试题库1',
     description: '测试题库描述1111',
+    is_enabled: 1,
     created_by: users[0].id,
   },
   {
     id: 2,
     name: '测试题库2',
     description: '测试题库描述222',
+    is_enabled: 1,
     created_by: users[0].id,
   },
 ]
