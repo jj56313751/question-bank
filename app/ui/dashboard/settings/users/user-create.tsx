@@ -2,10 +2,10 @@
 import { useState } from 'react'
 import { Button, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import BankEditModal from './bank-edit-modal'
-import { createBank } from '@/app/lib/actions'
+import UserEditModal from './user-edit-modal'
+import { createUser } from '@/app/lib/actions'
 
-export default function BankCreate() {
+export default function UserCreate() {
   const [visible, setVisible] = useState<boolean>(false)
   const [messageApi, contextHolder] = message.useMessage()
 
@@ -15,15 +15,15 @@ export default function BankCreate() {
       .then(async (values: any) => {
         // console.log('[values]-18', values)
         values.isEnabled = +values.isEnabled
-        const err = await createBank(values)
+        const err = await createUser(values)
         // console.log('[err]-20', err)
         if (!err) {
-          messageApi.success('创建成功')
+          messageApi.success('新增成功')
           setVisible(false)
           form.resetFields()
         } else {
           if (err.code === 1062) {
-            messageApi.error('题库名称已存在')
+            messageApi.error('邮箱或账号名称已存在')
           } else {
             messageApi.error(err.message)
           }
@@ -41,9 +41,9 @@ export default function BankCreate() {
         icon={<PlusOutlined />}
         onClick={() => setVisible(true)}
       >
-        新建题库
+        新增用户
       </Button>
-      <BankEditModal
+      <UserEditModal
         title="新建"
         visible={visible}
         handleOk={handleOk}

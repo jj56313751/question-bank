@@ -2,13 +2,13 @@ import React, { Suspense } from 'react'
 import { Metadata } from 'next'
 import SearchForm from '@/app/ui/dashboard/search-form'
 import { searchItems } from './config'
-import ListTable from '@/app/ui/dashboard/bank/list-table'
-import { fetchBanks } from '@/app/lib/data'
-import { BankList } from '@/app/lib/types'
-import BankCreate from '@/app/ui/dashboard/bank/bank-create'
+import ListTable from '@/app/ui/dashboard/settings/users/list-table'
+import { fetchUsers } from '@/app/lib/data'
+import { UserList } from '@/app/lib/types'
+import UserCreate from '@/app/ui/dashboard/settings/users/user-create'
 
 export const metadata: Metadata = {
-  title: '题库列表',
+  title: '用户列表',
 }
 
 export default async function Page({
@@ -16,6 +16,7 @@ export default async function Page({
 }: {
   searchParams?: {
     name?: string
+    email?: string
     isEnabled?: number
     pageNumber?: number
     pageSize?: number
@@ -23,19 +24,20 @@ export default async function Page({
 }) {
   // console.log('[searchParams]-29', searchParams)
   // 获取数据
-  const banks: any = await fetchBanks({
+  const users: any = await fetchUsers({
     name: searchParams?.name,
+    email: searchParams?.email,
     isEnabled: searchParams?.isEnabled,
     pageNumber: searchParams?.pageNumber || 1,
     pageSize: searchParams?.pageSize || 10,
   })
-  const dataSource = banks.list as BankList[]
-  const total = banks.total
+  const dataSource = users.list as UserList[]
+  const total = users.total
   // console.log('[dataSource]-29', dataSource)
 
   return (
     <>
-      <SearchForm items={searchItems} btns={<BankCreate />} />
+      <SearchForm items={searchItems} btns={<UserCreate />} />
       <ListTable dataSource={dataSource} total={total} />
     </>
   )
