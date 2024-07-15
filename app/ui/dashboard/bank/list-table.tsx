@@ -7,7 +7,7 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import BankEditModal from './bank-edit-modal'
 import BankImportModal from './bank-import-modal'
 import { updateBank, importQuestions } from '@/app/lib/actions'
-import { bankStatusMap } from '@/app/lib/constant'
+import { isEnabledMap } from '@/app/lib/constant'
 import dayjs from 'dayjs'
 import { objectHavingKeys } from '@/app/lib/utils'
 
@@ -90,7 +90,7 @@ export default function ListTable({
             marginInlineEnd: 0,
           }}
         >
-          {bankStatusMap[record.isEnabled]}
+          {isEnabledMap[record.isEnabled]}
         </Tag>
       ),
     },
@@ -160,8 +160,7 @@ export default function ListTable({
           messageApi.success('修改成功')
           setEditVisible(false)
         } else {
-          console.log('err', err)
-          if (err.code === 'ER_DUP_ENTRY') {
+          if (err.code === 1062) {
             messageApi.error('题库名称已存在')
           } else {
             messageApi.error(err.message)

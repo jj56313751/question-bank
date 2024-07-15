@@ -10,6 +10,12 @@ import { signIn, signOut } from '@/auth'
 import { AuthError } from 'next-auth'
 import { intPassword } from '@/app/lib/constant'
 
+function revalidateCurrentPath() {
+  const redirectUrl = headers().get('x-request-url') || ''
+  revalidatePath(redirectUrl)
+  redirect(redirectUrl)
+}
+
 const BankSchema = z.object({
   id: z.number(),
   name: z.string({
@@ -142,14 +148,11 @@ export async function createBank(formData: any) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Create Bank.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Create Bank.',
     }
   }
-  const redirectUrl = headers().get('x-request-url') || ''
-  revalidatePath(redirectUrl)
-  redirect(redirectUrl)
+  revalidateCurrentPath()
 }
 
 export async function updateBank(id: number, formData: any) {
@@ -177,9 +180,8 @@ export async function updateBank(id: number, formData: any) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Update Bank.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Update Bank.',
     }
   }
   const redirectUrl = headers().get('x-request-url') || ''
@@ -220,14 +222,11 @@ export async function createQuestion(formData: any) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Create Question.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Create Question.',
     }
   }
-  const redirectUrl = headers().get('x-request-url') || ''
-  revalidatePath(redirectUrl)
-  redirect(redirectUrl)
+  revalidateCurrentPath()
 }
 
 export async function updateQuestion(id: number, formData: any) {
@@ -262,14 +261,11 @@ export async function updateQuestion(id: number, formData: any) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Update Question.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Update Question.',
     }
   }
-  const redirectUrl = headers().get('x-request-url') || ''
-  revalidatePath(redirectUrl)
-  redirect(redirectUrl)
+  revalidateCurrentPath()
 }
 
 export async function deleteQuestion(id: number, bankId: number) {
@@ -299,14 +295,11 @@ export async function deleteQuestion(id: number, bankId: number) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Delete Question.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Delete Question.',
     }
   }
-  const redirectUrl = headers().get('x-request-url') || ''
-  revalidatePath(redirectUrl)
-  redirect(redirectUrl)
+  revalidateCurrentPath()
 }
 
 export async function importQuestions(bankId: number, data: any[]) {
@@ -332,14 +325,11 @@ export async function importQuestions(bankId: number, data: any[]) {
   } catch (error: any) {
     console.log('[error]-307', error)
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Import Question.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Import Question.',
     }
   }
-  const redirectUrl = headers().get('x-request-url') || ''
-  revalidatePath(redirectUrl)
-  redirect(redirectUrl)
+  revalidateCurrentPath()
 }
 
 export async function authenticate(params: any) {
@@ -392,17 +382,20 @@ export async function createUser(formData: any) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Create User.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Create User.',
     }
   }
-  const redirectUrl = headers().get('x-request-url') || ''
-  revalidatePath(redirectUrl)
-  redirect(redirectUrl)
+  revalidateCurrentPath()
 }
 
 export async function resetUserPassowrd(id: number) {
+  if (id === 1) {
+    return {
+      code: -1,
+      message: 'Admin User Password Cannot be Reset.',
+    }
+  }
   const hashedPassword = await bcrypt.hash(intPassword, 10)
   try {
     await db.query(
@@ -415,11 +408,12 @@ export async function resetUserPassowrd(id: number) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Reset User Password.',
+      code: error.errno || -1,
+      message:
+        error.message || 'Database Error: Failed to Reset User Password.',
     }
   }
+  revalidateCurrentPath()
 }
 
 export async function updateUserStatus(id: number, isEnabled: number) {
@@ -434,11 +428,11 @@ export async function updateUserStatus(id: number, isEnabled: number) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Update User Status.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Update User Status.',
     }
   }
+  revalidateCurrentPath()
 }
 
 export async function updateUser(id: number, formData: any) {
@@ -464,12 +458,9 @@ export async function updateUser(id: number, formData: any) {
     )
   } catch (error: any) {
     return {
-      code: error.code || 0,
-      errors: JSON.parse(JSON.stringify(error)),
-      message: 'Database Error: Failed to Update User.',
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Update User.',
     }
   }
-  const redirectUrl = headers().get('x-request-url') || ''
-  revalidatePath(redirectUrl)
-  redirect(redirectUrl)
+  revalidateCurrentPath()
 }

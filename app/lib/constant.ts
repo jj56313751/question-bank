@@ -4,7 +4,7 @@ export const questionTypesMap = <Record<string, string>>{
   3: '判断题',
 }
 
-export const bankStatusMap = <Record<number, string>>{
+export const isEnabledMap = <Record<string, string>>{
   0: '禁用',
   1: '启用',
 }

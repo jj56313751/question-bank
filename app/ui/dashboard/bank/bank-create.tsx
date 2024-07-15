@@ -22,7 +22,7 @@ export default function BankCreate() {
           setVisible(false)
           form.resetFields()
         } else {
-          if (err.code === 'ER_DUP_ENTRY') {
+          if (err.code === 1062) {
             messageApi.error('题库名称已存在')
           } else {
             messageApi.error(err.message)

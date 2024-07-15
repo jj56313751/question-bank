@@ -22,7 +22,7 @@ export async function fetchBanks({
 
     if (name !== undefined) {
       sql += ` AND bank.name LIKE ?`
-      params.push(name)
+      params.push(`%${name}%`)
     }
 
     if (isEnabled !== undefined) {
@@ -130,7 +130,7 @@ export async function fetchQuestions({
 
     if (title) {
       sql += ` AND (title LIKE ? OR options LIKE ?)`
-      params.push(title, title)
+      params.push(`%${title}%`, `%${title}%`)
     }
 
     if (type) {
@@ -219,5 +219,75 @@ export async function getUserByNameOrEmail(
   } catch (error) {
     console.error('Failed to fetch user:', error)
     throw new Error('Failed to fetch user.')
+  }
+}
+
+export async function fetchUsers({
+  id,
+  name,
+  email,
+  isEnabled,
+  pageNumber = 1,
+  pageSize = 10,
+}: {
+  id?: number
+  name?: string
+  email?: string
+  isEnabled?: number
+} & Page): Promise<{ total: number; list: UserList[] } | unknown> {
+  try {
+    let sql = 'WHERE deleted_at IS NULL'
+    const params: any[] = []
+
+    if (id) {
+      sql += ` AND id = ?`
+      params.push(id)
+    }
+
+    if (name) {
+      sql += ` AND name LIKE ?`
+      params.push(`%${name}%`)
+    }
+
+    if (email) {
+      sql += ` AND email LIKE ?`
+      params.push(`%${email}%`)
+    }
+
+    if (isEnabled !== undefined) {
+      sql += ` AND is_enabled = ?`
+      params.push(isEnabled)
+    }
+
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total_count FROM users ${sql}`,
+      params,
+    )
+
+    const offset = (pageNumber - 1) * Number(pageSize)
+    const limit = Number(pageSize)
+    const [rows] = await db.query(
+      `
+        SELECT 
+          id,
+          name,
+          email,
+          is_enabled isEnabled,
+          created_at createdAt,
+          updated_at updatedAt
+        FROM users
+        ${sql}
+        ORDER BY id
+        LIMIT ? OFFSET ?
+      `,
+      [...params, limit, offset],
+    )
+    return {
+      total: (countRows as any)[0].total_count,
+      list: rows as UserList[],
+    }
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch Users.')
   }
 }

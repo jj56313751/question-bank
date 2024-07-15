@@ -12,7 +12,7 @@ const users = [
     id: 2,
     name: 'test',
     email: 'test@qq.com',
-    password: '12345678',
+    password: '123456788',
     is_enabled: 1,
   },
 ]
