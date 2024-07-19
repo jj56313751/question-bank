@@ -2,16 +2,16 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "commit": "git-cz",
+    "commit:comment": "引导设置规范化的提交信息",
     "dev": "next dev",
     "lint-staged": "lint-staged",
     "prepare": "husky && husky",
     "prettier": "prettier --write --ignore-unknown .",
     "prettier:check": "prettier --check --ignore-unknown .",
     "prettier:comment": "自动格式化当前目录下的所有文件",
-    "commit": "git-cz",
-    "commit:comment": "引导设置规范化的提交信息",
-    "start": "next start",
-    "seed": "node -r dotenv/config ./scripts/seed.js"
+    "seed": "ts-node --transpile-only prisma/seed.ts",
+    "start": "next start"
   },
   "lint-staged": {
     "app/**/*.{js,jsx,ts,tsx,vue,css,scss,json}": [
@@ -27,6 +27,7 @@
     "@ant-design/icons": "^5.3.7",
     "@ant-design/nextjs-registry": "^1.0.0",
     "@heroicons/react": "^2.0.18",
+    "@prisma/client": "5.17.0",
     "@tailwindcss/forms": "^0.5.7",
     "@types/node": "20.5.7",
     "@vercel/postgres": "^0.5.0",
@@ -67,7 +68,9 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.0.3",
-    "prettier-plugin-tailwindcss": "0.5.4"
+    "prettier-plugin-tailwindcss": "0.5.4",
+    "prisma": "^5.17.0",
+    "ts-node": "^10.9.2"
   },
   "engines": {
     "node": ">=18.17.0"

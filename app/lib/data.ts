@@ -1,6 +1,7 @@
 // import { toCamelCase } from './utils'
 import db from '../../db/index'
 import type { Page, BankList, QuestionList, UserList } from './types'
+import { PrismaClient } from '@prisma/client'
 
 export async function fetchBanks({
   id,
@@ -289,5 +290,46 @@ export async function fetchUsers({
   } catch (error) {
     console.error('Database Error:', error)
     throw new Error('Failed to fetch Users.')
+  }
+}
+
+export async function fetchRoles({
+  id,
+  description,
+  pageNumber = 1,
+  pageSize = 10,
+}: {
+  id?: number
+  description?: string
+} & Page) {
+  try {
+    const where: any = {}
+    if (id) {
+      where.id = id
+    }
+    if (description) {
+      where.description = description
+    }
+
+    const offset = (pageNumber - 1) * Number(pageSize)
+    const limit = Number(pageSize)
+
+    const total = await prisma.roles.count({
+      where,
+    })
+
+    const rows = await prisma.roles.findMany({
+      skip: offset,
+      take: limit,
+      where,
+    })
+
+    return {
+      total,
+      list: rows,
+    }
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch Roles.')
   }
 }

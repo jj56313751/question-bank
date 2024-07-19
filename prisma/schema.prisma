@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Users {
+  id               Int         @id @default(autoincrement())
+  name             String      @unique(map: "unique_user_name") @db.VarChar(255)
+  email            String      @unique(map: "unique_user_email") @db.VarChar(255)
+  password         String      @db.VarChar(255)
+  is_enabled       Boolean
+  created_at       DateTime    @default(now())
+  updated_at       DateTime    @updatedAt
+  deleted_at       DateTime?
+  BanksCreated     Banks[]     @relation("BanksCreated")
+  BanksUpdated     Banks[]     @relation("BanksUpdated")
+  BanksDeleted     Banks[]     @relation("BanksDeleted")
+  QuestionsCreated Questions[] @relation("QuestionsCreated")
+  QuestionsUpdated Questions[] @relation("QuestionsUpdated")
+  QuestionsDeleted Questions[] @relation("QuestionsDeleted")
+}
+
+model Banks {
+  id             Int         @id @default(autoincrement())
+  name           String      @unique(map: "unique_bank_name") @db.VarChar(255)
+  description    String?     @db.VarChar(255)
+  is_enabled     Boolean
+  created_by     Int
+  updated_by     Int?
+  deleted_by     Int?
+  created_at     DateTime    @default(now())
+  updated_at     DateTime?   @updatedAt
+  deleted_at     DateTime?
+  UsersCreatedBy Users       @relation("BanksCreated", fields: [created_by], references: [id])
+  UsersUpdatedBy Users?      @relation("BanksUpdated", fields: [updated_by], references: [id])
+  UsersDeletedBy Users?      @relation("BanksDeleted", fields: [deleted_by], references: [id])
+  Questions      Questions[]
+}
+
+model Questions {
+  id             Int       @id @default(autoincrement())
+  type           Int?
+  title          String    @db.Text
+  options        String?   @db.Text
+  answer         String?   @db.Text
+  analysis       String?   @db.Text
+  bank_id        Int
+  created_by     Int
+  updated_by     Int?
+  deleted_by     Int?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime? @updatedAt
+  deleted_at     DateTime?
+  Banks          Banks     @relation(fields: [bank_id], references: [id])
+  UsersCreatedBy Users     @relation("QuestionsCreated", fields: [created_by], references: [id])
+  UsersUpdatedBy Users?    @relation("QuestionsUpdated", fields: [updated_by], references: [id])
+  UsersDeletedBy Users?    @relation("QuestionsDeleted", fields: [deleted_by], references: [id])
+
+  @@unique([title(length: 255), bank_id], name: "unique_question_title_bank_id")
+}
+
+model Roles {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique(map: "unique_role_name") @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  is_enabled  Boolean
+  created_at  DateTime  @default(now())
+  updated_at  DateTime? @updatedAt
+  deleted_at  DateTime?
+}
