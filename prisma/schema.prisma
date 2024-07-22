@@ -19,10 +19,10 @@ model Users {
   name             String      @unique(map: "unique_user_name") @db.VarChar(255)
   email            String      @unique(map: "unique_user_email") @db.VarChar(255)
   password         String      @db.VarChar(255)
-  is_enabled       Boolean
-  created_at       DateTime    @default(now())
-  updated_at       DateTime    @updatedAt
-  deleted_at       DateTime?
+  isEnabled        Int         @map("is_enabled") @db.TinyInt
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime?   @updatedAt @map("updated_at")
+  deletedAt        DateTime?   @map("deleted_at")
   BanksCreated     Banks[]     @relation("BanksCreated")
   BanksUpdated     Banks[]     @relation("BanksUpdated")
   BanksDeleted     Banks[]     @relation("BanksDeleted")
@@ -35,16 +35,16 @@ model Banks {
   id             Int         @id @default(autoincrement())
   name           String      @unique(map: "unique_bank_name") @db.VarChar(255)
   description    String?     @db.VarChar(255)
-  is_enabled     Boolean
-  created_by     Int
-  updated_by     Int?
-  deleted_by     Int?
-  created_at     DateTime    @default(now())
-  updated_at     DateTime?   @updatedAt
-  deleted_at     DateTime?
-  UsersCreatedBy Users       @relation("BanksCreated", fields: [created_by], references: [id])
-  UsersUpdatedBy Users?      @relation("BanksUpdated", fields: [updated_by], references: [id])
-  UsersDeletedBy Users?      @relation("BanksDeleted", fields: [deleted_by], references: [id])
+  isEnabled      Int         @map("is_enabled") @db.TinyInt
+  createdBy      Int         @map("created_by")
+  updatedBy      Int?        @map("updated_by")
+  deletedBy      Int?        @map("deleted_by")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime?   @updatedAt @map("updated_at")
+  deletedAt      DateTime?   @map("deleted_at")
+  UsersCreatedBy Users       @relation("BanksCreated", fields: [createdBy], references: [id])
+  UsersUpdatedBy Users?      @relation("BanksUpdated", fields: [updatedBy], references: [id])
+  UsersDeletedBy Users?      @relation("BanksDeleted", fields: [deletedBy], references: [id])
   Questions      Questions[]
 }
 
@@ -55,27 +55,27 @@ model Questions {
   options        String?   @db.Text
   answer         String?   @db.Text
   analysis       String?   @db.Text
-  bank_id        Int
-  created_by     Int
-  updated_by     Int?
-  deleted_by     Int?
-  created_at     DateTime  @default(now())
-  updated_at     DateTime? @updatedAt
-  deleted_at     DateTime?
-  Banks          Banks     @relation(fields: [bank_id], references: [id])
-  UsersCreatedBy Users     @relation("QuestionsCreated", fields: [created_by], references: [id])
-  UsersUpdatedBy Users?    @relation("QuestionsUpdated", fields: [updated_by], references: [id])
-  UsersDeletedBy Users?    @relation("QuestionsDeleted", fields: [deleted_by], references: [id])
+  bankId         Int       @map("bank_id")
+  createdBy      Int       @map("created_by")
+  updatedBy      Int?      @map("updated_by")
+  deletedBy      Int?      @map("deleted_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime? @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  Banks          Banks     @relation(fields: [bankId], references: [id])
+  UsersCreatedBy Users     @relation("QuestionsCreated", fields: [createdBy], references: [id])
+  UsersUpdatedBy Users?    @relation("QuestionsUpdated", fields: [updatedBy], references: [id])
+  UsersDeletedBy Users?    @relation("QuestionsDeleted", fields: [deletedBy], references: [id])
 
-  @@unique([title(length: 255), bank_id], name: "unique_question_title_bank_id")
+  @@unique([title(length: 255), bankId], name: "unique_question_title_bank_id")
 }
 
 model Roles {
   id          Int       @id @default(autoincrement())
   name        String    @unique(map: "unique_role_name") @db.VarChar(255)
   description String?   @db.VarChar(255)
-  is_enabled  Boolean
-  created_at  DateTime  @default(now())
-  updated_at  DateTime? @updatedAt
-  deleted_at  DateTime?
+  isEnabled   Int       @map("is_enabled") @db.TinyInt
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 }

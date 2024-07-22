@@ -106,7 +106,7 @@ const roles = [
   {
     id: 1,
     name: 'super_admin',
-    description: '拥有最高权限',
+    description: '超级管理员',
     is_enabled: 1,
   },
   {

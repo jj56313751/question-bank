@@ -1,13 +1,14 @@
 'use server'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
+import db from '../../db/index'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { QuestionList } from '@/app/lib/types'
 import { signIn, signOut } from '@/auth'
 import { AuthError } from 'next-auth'
 import { intPassword } from '@/app/lib/constant'
-import prisma from '@/app/lib/prisma'
 
 function revalidateCurrentPath() {
   const redirectUrl = headers().get('x-request-url') || ''
@@ -99,8 +100,6 @@ const DeleteQuestion = QuestionSchema.pick({
 })
 const ImportQuestion = QuestionSchema.pick({
   bankId: true,
-  title: true,
-  createdBy: true,
 })
 
 const UserSchema = z.object({
@@ -140,15 +139,15 @@ export async function createBank(formData: any) {
   const { name, description, isEnabled, createdBy } = validatedFields.data
 
   try {
-    await prisma.banks.create({
-      data: {
-        name,
-        description,
-        isEnabled,
-        createdBy,
-      },
-    })
+    await db.query(
+      `
+        INSERT INTO banks (name, description, is_enabled, created_by)
+        VALUES (?, ?, ?, ?)
+      `,
+      [name, description || null, isEnabled, createdBy],
+    )
   } catch (error: any) {
+    console.log('[error]-162', error)
     return {
       code: error.code || -1,
       message: error.message || 'Database Error: Failed to Create Bank.',
@@ -172,18 +171,17 @@ export async function updateBank(id: number, formData: any) {
   const { name, description, isEnabled, updatedBy } = validatedFields.data
 
   try {
-    await prisma.banks.update({
-      where: { id },
-      data: {
-        name,
-        description,
-        isEnabled,
-        updatedBy,
-      },
-    })
+    await db.query(
+      `
+        UPDATE banks
+        SET name = ?, description = ?, is_enabled = ?, updated_by = ?
+        WHERE id = ?;
+      `,
+      [name, description || null, isEnabled, updatedBy, id],
+    )
   } catch (error: any) {
     return {
-      code: error.code || -1,
+      code: error.errno || -1,
       message: error.message || 'Database Error: Failed to Update Bank.',
     }
   }
@@ -208,20 +206,24 @@ export async function createQuestion(formData: any) {
     validatedFields.data
 
   try {
-    await prisma.questions.create({
-      data: {
-        type,
-        title,
-        options,
-        answer,
-        analysis,
-        bankId,
-        createdBy,
-      },
-    })
+    await db.query(
+      `
+        INSERT INTO questions (
+          type, 
+          title, 
+          options, 
+          answer, 
+          analysis, 
+          bank_id, 
+          created_by
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [type, title, options, answer, analysis || null, bankId, createdBy],
+    )
   } catch (error: any) {
     return {
-      code: error.code || -1,
+      code: error.errno || -1,
       message: error.message || 'Database Error: Failed to Create Question.',
     }
   }
@@ -244,20 +246,23 @@ export async function updateQuestion(id: number, formData: any) {
     validatedFields.data
 
   try {
-    await prisma.questions.update({
-      where: { id },
-      data: {
-        type,
-        title,
-        options,
-        answer,
-        analysis,
-        updatedBy,
-      },
-    })
+    await db.query(
+      `
+        UPDATE questions
+        SET 
+          type = ?, 
+          title = ?, 
+          options = ?, 
+          answer = ?, 
+          analysis = ?, 
+          updated_by = ?
+        WHERE id = ?;
+      `,
+      [type, title, options, answer, analysis || null, updatedBy, id],
+    )
   } catch (error: any) {
     return {
-      code: error.code || -1,
+      code: error.errno || -1,
       message: error.message || 'Database Error: Failed to Update Question.',
     }
   }
@@ -281,16 +286,17 @@ export async function deleteQuestion(id: number, bankId: number) {
   }
 
   try {
-    await prisma.questions.update({
-      data: {
-        deletedAt: new Date(),
-        deletedBy,
-      },
-      where: { id, bankId },
-    })
+    await db.query(
+      `
+        UPDATE questions
+        SET deleted_at = NOW(), deleted_by = ?
+        WHERE id = ? AND bank_id = ?;
+      `,
+      [deletedBy, id, bankId],
+    )
   } catch (error: any) {
     return {
-      code: error.code || -1,
+      code: error.errno || -1,
       message: error.message || 'Database Error: Failed to Delete Question.',
     }
   }
@@ -300,52 +306,27 @@ export async function deleteQuestion(id: number, bankId: number) {
 export async function importQuestions(bankId: number, data: any[]) {
   // TODO Add logged in userid
   const createdBy = 1
-  const upsertOperations: any[] = []
 
-  data.forEach((question: any) => {
-    const validatedFields = ImportQuestion.safeParse({
-      ...question,
-      bankId,
-      createdBy,
-    })
-    if (validatedFields.success) {
-      upsertOperations.push(
-        prisma.questions.upsert({
-          where: {
-            unique_question_title_bank_id: {
-              title: question.title,
-              bankId: bankId,
-            },
-          },
-          update: {
-            updatedBy: createdBy,
-            type: question.type,
-            title: question.title,
-            options: question.options,
-            answer: question.answer,
-            analysis: question.analysis,
-          },
-          create: {
-            type: question.type,
-            title: question.title,
-            options: question.options,
-            answer: question.answer,
-            analysis: question.analysis,
-            bankId: bankId,
-            createdBy: createdBy,
-          },
-        }),
-      )
-    }
+  const values = data.map((question) => {
+    const { type, title, options, answer, analysis } = question
+    return [type, title, options, answer, analysis, bankId, createdBy]
   })
 
+  const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?)').join(',')
+
+  const sql = `
+    INSERT INTO questions 
+    (type, title, options, answer, analysis, bank_id, created_by) 
+    VALUES ${placeholders}
+    ON DUPLICATE KEY UPDATE updated_by = VALUES(created_by);
+  `
+
   try {
-    const res = await prisma.$transaction(upsertOperations)
-    // await db.query(sql, values.flat())
+    await db.query(sql, values.flat())
   } catch (error: any) {
     console.log('[error]-307', error)
     return {
-      code: error.code || -1,
+      code: error.errno || -1,
       message: error.message || 'Database Error: Failed to Import Question.',
     }
   }
@@ -393,17 +374,16 @@ export async function createUser(formData: any) {
   const hashedPassword = await bcrypt.hash(intPassword, 10)
 
   try {
-    await prisma.users.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        isEnabled,
-      },
-    })
+    await db.query(
+      `
+        INSERT INTO users (name, email, password, is_enabled)
+        VALUES (?, ?, ?, ?)
+      `,
+      [name, email, hashedPassword, isEnabled],
+    )
   } catch (error: any) {
     return {
-      code: error.code || -1,
+      code: error.errno || -1,
       message: error.message || 'Database Error: Failed to Create User.',
     }
   }
@@ -419,15 +399,68 @@ export async function resetUserPassowrd(id: number) {
   }
   const hashedPassword = await bcrypt.hash(intPassword, 10)
   try {
-    await prisma.users.update({
-      where: { id },
-      data: { password: hashedPassword },
-    })
+    await db.query(
+      `
+        UPDATE users
+        SET password = ?
+        WHERE id = ?;
+      `,
+      [hashedPassword, id],
+    )
   } catch (error: any) {
     return {
-      code: error.code || -1,
+      code: error.errno || -1,
       message:
         error.message || 'Database Error: Failed to Reset User Password.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateUserStatus(id: number, isEnabled: number) {
+  try {
+    await db.query(
+      `
+        UPDATE users
+        SET is_enabled = ?
+        WHERE id = ?;
+      `,
+      [isEnabled, id],
+    )
+  } catch (error: any) {
+    return {
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Update User Status.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateUser(id: number, formData: any) {
+  const validatedFields = UpdateUser.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update User.',
+    }
+  }
+  const { password, isEnabled } = validatedFields.data
+
+  const hashedPassword = await bcrypt.hash(password, 10)
+
+  try {
+    await db.query(
+      `
+        UPDATE users
+        SET password = ?, is_enabled = ?
+        WHERE id = ?;
+      `,
+      [hashedPassword, isEnabled, id],
+    )
+  } catch (error: any) {
+    return {
+      code: error.errno || -1,
+      message: error.message || 'Database Error: Failed to Update User.',
     }
   }
   revalidateCurrentPath()

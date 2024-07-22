@@ -11,13 +11,17 @@ async function seedUsers() {
       const hashedPassword = await bcrypt.hash(user.password, 10)
       await prisma.users.upsert({
         where: { email: user.email }, // 根据 email 字段查找用户
-        update: {}, // 如果用户存在，不更新任何字段
+        update: {
+          name: user.name,
+          password: hashedPassword,
+          isEnabled: user.is_enabled,
+        },
         create: {
-          // 如果用户不存在，创建新用户
+          // 如果不存在，创建
           name: user.name,
           email: user.email,
           password: hashedPassword,
-          is_enabled: !!user.is_enabled,
+          isEnabled: user.is_enabled,
         },
       })
     }),
@@ -30,13 +34,18 @@ async function seedBanks() {
       async (bank: any) =>
         await prisma.banks.upsert({
           where: { name: bank.name },
-          update: {}, // 如果存在，不更新任何字段
+          update: {
+            // 如果存在，更新字段
+            description: bank.description,
+            isEnabled: bank.is_enabled,
+            createdBy: bank.created_by,
+          },
           create: {
             // 如果不存在，创建
             name: bank.name,
             description: bank.description,
-            is_enabled: !!bank.is_enabled,
-            created_by: bank.created_by,
+            isEnabled: bank.is_enabled,
+            createdBy: bank.created_by,
           },
         }),
     ),
@@ -51,18 +60,26 @@ async function seedQuestions() {
           where: {
             unique_question_title_bank_id: {
               title: question.title,
-              bank_id: question.bank_id,
+              bankId: question.bank_id,
             },
           },
-          update: {}, // 如果存在，不更新任何字段
+          update: {
+            // 如果存在，更新字段
+            type: question.type,
+            answer: question.answer,
+            options: question.options,
+            analysis: question.analysis,
+            createdBy: question.created_by,
+          },
           create: {
             // 如果不存在，创建
             type: question.type,
             title: question.title,
+            answer: question.answer,
             options: question.options,
             analysis: question.analysis,
-            bank_id: question.bank_id,
-            created_by: question.created_by,
+            bankId: question.bank_id,
+            createdBy: question.created_by,
           },
         }),
     ),
@@ -75,12 +92,16 @@ async function seedRoles() {
       async (role: any) =>
         await prisma.roles.upsert({
           where: { name: role.name },
-          update: {}, // 如果存在，不更新任何字段
+          update: {
+            // 如果存在，更新字段
+            description: role.description,
+            isEnabled: role.is_enabled,
+          },
           create: {
             // 如果不存在，创建
             name: role.name,
             description: role.description,
-            is_enabled: !!role.is_enabled,
+            isEnabled: role.is_enabled,
           },
         }),
     ),
