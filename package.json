@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "npx prisma generate && npx prisma migrate deploy && next build",
     "commit": "git-cz",
     "commit:comment": "引导设置规范化的提交信息",
     "dev": "next dev",
