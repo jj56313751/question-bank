@@ -1,6 +1,6 @@
-// import { toCamelCase } from './utils'
-import db from '../../db/index'
-import type { Page, BankList, QuestionList, UserList } from './types'
+import type { Page } from './types'
+import { Prisma } from '@prisma/client'
+import prisma from '@/app/lib/prisma'
 
 export async function fetchBanks({
   id,
@@ -9,104 +9,65 @@ export async function fetchBanks({
   pageNumber = 1,
   pageSize = 10,
 }: { id?: number; name?: string; isEnabled?: number } & Page): Promise<
-  { total: number; list: BankList[] } | unknown
+  { total: number; list: Prisma.BanksSelect[] } | unknown
 > {
   try {
-    let sql = 'WHERE deleted_at IS NULL'
-    const params: any[] = []
-
-    if (id !== undefined) {
-      sql += ` AND bank.id = ?`
-      params.push(id)
+    const where: Prisma.BanksWhereInput = {
+      deletedAt: null,
     }
-
-    if (name !== undefined) {
-      sql += ` AND bank.name LIKE ?`
-      params.push(`%${name}%`)
-    }
-
-    if (isEnabled !== undefined) {
-      sql += ` AND bank.is_enabled = ?`
-      params.push(isEnabled)
-    }
-
-    const [countRows] = await db.query(
-      `SELECT COUNT(*) AS total_count FROM banks bank ${sql}`,
-      params,
-    )
+    if (id !== undefined) where.id = Number(id)
+    if (name !== undefined) where.name = name
+    if (isEnabled !== undefined) where.isEnabled = Number(isEnabled)
 
     const offset = (pageNumber - 1) * Number(pageSize)
     const limit = Number(pageSize)
 
-    const [rows] = await db.query(
-      `
-        SELECT 
-          bank.id,
-          bank.name,
-          bank.description,
-          bank.is_enabled isEnabled,
-          bank.created_by createdBy,
-          bank.created_at createdAt,
-          bank.updated_at updatedAt,
-          bank.updated_by updatedBy,
-          IFNULL(question.questions_count, 0) AS total
-        FROM 
-          banks bank
-        LEFT JOIN (
-          SELECT 
-            bank_id, 
-            COUNT(*) AS questions_count
-          FROM 
-            questions
-          WHERE deleted_at IS NULL
-          GROUP BY 
-            bank_id
-        ) question ON bank.id = question.bank_id
-        ${sql}
-        ORDER BY 
-          bank.id
-        LIMIT ? OFFSET ?
-      `,
-      [...params, limit, offset],
+    const total = await prisma.banks.count({
+      where,
+    })
+
+    const rows = await prisma.banks.findMany({
+      skip: offset,
+      take: limit,
+      where,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isEnabled: true,
+        createdAt: true,
+        createdBy: true,
+        updatedAt: true,
+        updatedBy: true,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    })
+
+    const list = await Promise.all(
+      rows.map(async (item) => {
+        const questionCount = await prisma.questions.count({
+          where: {
+            bankId: item.id,
+            deletedAt: null,
+          },
+        })
+
+        return {
+          ...item,
+          total: questionCount,
+        }
+      }),
     )
 
     return {
-      total: (countRows as any[])[0].total_count,
-      list: rows as BankList[],
+      total,
+      list,
     }
   } catch (error) {
     console.error('Database Error:', error)
     throw new Error('Failed to fetch banks data.')
-  }
-}
-
-export async function fetchQuestionsByBankId(
-  id: number,
-): Promise<QuestionList[] | unknown> {
-  try {
-    const [rows] = await db.query(
-      `
-        SELECT 
-          id,
-          type,
-          title,
-          options,
-          answer,
-          analysis,
-          bank_id bankId,
-          created_by createdBy,
-          created_at createdAt,
-          updated_at updatedAt,
-          updated_by updatedBy
-        FROM questions
-        WHERE bank_id = ?
-      `,
-      [id],
-    )
-    return rows as QuestionList[]
-  } catch (error) {
-    console.error('Database Error:', error)
-    throw new Error('Failed to fetchQuestionsByBankId.')
   }
 }
 
@@ -117,58 +78,59 @@ export async function fetchQuestions({
   pageNumber = 1,
   pageSize = 10,
 }: { bankId?: number; title?: string; type?: number } & Page): Promise<
-  { total: number; list: QuestionList[] } | unknown
+  { total: number; list: Prisma.QuestionsSelect[] } | unknown
 > {
   try {
-    let sql = 'WHERE deleted_at IS NULL'
-    const params: any[] = []
-
-    if (bankId) {
-      sql += ` AND bank_id = ?`
-      params.push(bankId)
+    const where: Prisma.QuestionsWhereInput = {
+      AND: [
+        {
+          deletedAt: null,
+        },
+        bankId ? { bankId: Number(bankId) } : {},
+        title
+          ? {
+              OR: [
+                { title: { contains: title } },
+                { options: { contains: title } },
+              ],
+            }
+          : {},
+        type ? { type: Number(type) } : {},
+      ],
     }
-
-    if (title) {
-      sql += ` AND (title LIKE ? OR options LIKE ?)`
-      params.push(`%${title}%`, `%${title}%`)
-    }
-
-    if (type) {
-      sql += ` AND type = ?`
-      params.push(type)
-    }
-
-    const [countRows] = await db.query(
-      `SELECT COUNT(*) AS total_count FROM questions ${sql}`,
-      params,
-    )
 
     const offset = (pageNumber - 1) * Number(pageSize)
     const limit = Number(pageSize)
-    const [rows] = await db.query(
-      `
-        SELECT 
-          id,
-          type,
-          title,
-          options,
-          answer,
-          analysis,
-          bank_id bankId,
-          created_by createdBy,
-          created_at createdAt,
-          updated_at updatedAt,
-          updated_by updatedBy
-        FROM questions
-        ${sql}
-        ORDER BY id
-        LIMIT ? OFFSET ?
-      `,
-      [...params, limit, offset],
-    )
+
+    const total = await prisma.questions.count({
+      where,
+    })
+
+    const rows = await prisma.questions.findMany({
+      skip: offset,
+      take: limit,
+      where,
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        options: true,
+        answer: true,
+        analysis: true,
+        bankId: true,
+        createdAt: true,
+        createdBy: true,
+        updatedAt: true,
+        updatedBy: true,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    })
+
     return {
-      total: (countRows as any)[0].total_count,
-      list: rows as QuestionList[],
+      total,
+      list: rows,
     }
   } catch (error) {
     console.error('Database Error:', error)
@@ -176,46 +138,23 @@ export async function fetchQuestions({
   }
 }
 
-export async function getUserByEmail(
-  email: string,
-): Promise<UserList[] | unknown> {
-  try {
-    const [rows] = await db.query(
-      `
-        SELECT 
-          id,
-          name,
-          email,
-          password
-        FROM users WHERE email=?
-      `,
-      [email],
-    )
-    return rows as UserList[]
-  } catch (error) {
-    console.error('Failed to fetch user:', error)
-    throw new Error('Failed to fetch user.')
-  }
-}
-
 export async function getUserByNameOrEmail(
   name: string,
-): Promise<UserList[] | unknown> {
+): Promise<Prisma.UsersSelect[] | unknown> {
   try {
-    const [rows] = await db.query(
-      `
-        SELECT 
-          id,
-          name,
-          email,
-          password
-        FROM users 
-        WHERE name=?
-          OR email=?
-      `,
-      [name, name],
-    )
-    return rows as UserList[]
+    const rows = await prisma.users.findMany({
+      where: {
+        OR: [{ name }, { email: name }],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+      },
+    })
+
+    return rows
   } catch (error) {
     console.error('Failed to fetch user:', error)
     throw new Error('Failed to fetch user.')
@@ -234,60 +173,89 @@ export async function fetchUsers({
   name?: string
   email?: string
   isEnabled?: number
-} & Page): Promise<{ total: number; list: UserList[] } | unknown> {
+} & Page): Promise<{ total: number; list: Prisma.UsersSelect[] } | unknown> {
   try {
-    let sql = 'WHERE deleted_at IS NULL'
-    const params: any[] = []
-
-    if (id) {
-      sql += ` AND id = ?`
-      params.push(id)
+    const where: Prisma.UsersWhereInput = {
+      deletedAt: null,
+      AND: [
+        id ? { id: Number(id) } : {},
+        name ? { name: { contains: name } } : {},
+        email ? { email: { contains: email } } : {},
+        isEnabled !== undefined ? { isEnabled: Number(isEnabled) } : {},
+      ],
     }
-
-    if (name) {
-      sql += ` AND name LIKE ?`
-      params.push(`%${name}%`)
-    }
-
-    if (email) {
-      sql += ` AND email LIKE ?`
-      params.push(`%${email}%`)
-    }
-
-    if (isEnabled !== undefined) {
-      sql += ` AND is_enabled = ?`
-      params.push(isEnabled)
-    }
-
-    const [countRows] = await db.query(
-      `SELECT COUNT(*) AS total_count FROM users ${sql}`,
-      params,
-    )
 
     const offset = (pageNumber - 1) * Number(pageSize)
     const limit = Number(pageSize)
-    const [rows] = await db.query(
-      `
-        SELECT 
-          id,
-          name,
-          email,
-          is_enabled isEnabled,
-          created_at createdAt,
-          updated_at updatedAt
-        FROM users
-        ${sql}
-        ORDER BY id
-        LIMIT ? OFFSET ?
-      `,
-      [...params, limit, offset],
-    )
+
+    const total = await prisma.users.count({
+      where,
+    })
+
+    const rows = await prisma.users.findMany({
+      skip: offset,
+      take: limit,
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    })
+
     return {
-      total: (countRows as any)[0].total_count,
-      list: rows as UserList[],
+      total,
+      list: rows,
     }
   } catch (error) {
     console.error('Database Error:', error)
     throw new Error('Failed to fetch Users.')
+  }
+}
+
+export async function fetchRoles({
+  id,
+  description,
+  pageNumber = 1,
+  pageSize = 10,
+}: {
+  id?: number
+  description?: string
+} & Page): Promise<{ total: number; list: Prisma.RolesSelect[] } | unknown> {
+  try {
+    const where: any = {}
+    if (id) {
+      where.id = id
+    }
+    if (description) {
+      where.description = description
+    }
+
+    const offset = (pageNumber - 1) * Number(pageSize)
+    const limit = Number(pageSize)
+
+    const total = await prisma.roles.count({
+      where,
+    })
+
+    const rows = await prisma.roles.findMany({
+      skip: offset,
+      take: limit,
+      where,
+    })
+
+    return {
+      total,
+      list: rows,
+    }
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch Roles.')
   }
 }

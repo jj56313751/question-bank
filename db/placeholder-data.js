@@ -102,9 +102,37 @@ E按照管理权限指导监督、检查评估下级问责委员会的工作`,
   },
 ]
 
+const roles = [
+  {
+    id: 1,
+    name: 'super_admin',
+    description: '超级管理员',
+    is_enabled: 1,
+  },
+  {
+    id: 2,
+    name: 'admin',
+    description: '管理员',
+    is_enabled: 1,
+  },
+  {
+    id: 3,
+    name: 'question_bank_admin',
+    description: '题库管理员',
+    is_enabled: 1,
+  },
+  {
+    id: 4,
+    name: 'user',
+    description: '普通用户',
+    is_enabled: 1,
+  },
+]
+
 // export { users, banks, questions }
 module.exports = {
   users,
   banks,
   questions,
+  roles,
 }

@@ -1,7 +1,7 @@
 const db = require('../db/index.js')
 // import db from '../db/index'
 
-const { users, banks, questions } = require('../db/placeholder-data.js')
+const { users, banks, questions, roles } = require('../db/placeholder-data.js')
 // import { users, banks, questions } from '../app/lib/placeholder-data.js'
 const bcrypt = require('bcrypt')
 // import bcrypt from 'bcrypt'
@@ -16,7 +16,7 @@ async function seedUsers(client) {
         password VARCHAR(255) NOT NULL,
         is_enabled BOOLEAN NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP NULL DEFAULT NULL,
         UNIQUE KEY unique_name (name),
         UNIQUE KEY unique_email (email)
@@ -30,14 +30,17 @@ async function seedUsers(client) {
       users.map(async (user) => {
         const hashedPassword = await bcrypt.hash(user.password, 10)
         // console.log('[hashedPassword]-30', hashedPassword)
-        return client.query(`
-          INSERT INTO users (id, name, email, password, is_enabled)
-          VALUES (${user.id}, '${user.name}', '${user.email}', '${hashedPassword}', ${user.is_enabled})
-          ON DUPLICATE KEY UPDATE
-            name = VALUES(name),
-            email = VALUES(email),
-            password = VALUES(password);
-        `)
+        return client.query(
+          `
+            INSERT INTO users (id, name, email, password, is_enabled)
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+              name = VALUES(name),
+              email = VALUES(email),
+              password = VALUES(password);
+          `,
+          [user.id, user.name, user.email, hashedPassword, user.is_enabled],
+        )
       }),
     )
 
@@ -64,7 +67,7 @@ async function seedBanks(client) {
         created_by INT NOT NULL,
         FOREIGN KEY (created_by) REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
         updated_by INT NULL,
         FOREIGN KEY (updated_by) REFERENCES users(id),
         deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -79,14 +82,23 @@ async function seedBanks(client) {
     // Insert data into the "banks" table
     const insertedBanks = await Promise.all(
       banks.map(async (bank) => {
-        return client.query(`
-          INSERT INTO banks (id, name, description, is_enabled, created_by)
-          VALUES (${bank.id}, '${bank.name}', ${bank.is_enabled}, '${bank.description}', ${bank.created_by})
-          ON DUPLICATE KEY UPDATE
-            name = VALUES(name),
-            description = VALUES(description),
-            created_by = VALUES(created_by);
-        `)
+        return client.query(
+          `
+            INSERT INTO banks (id, name, description, is_enabled, created_by)
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+              name = VALUES(name),
+              description = VALUES(description),
+              created_by = VALUES(created_by);
+          `,
+          [
+            bank.id,
+            bank.name,
+            bank.description,
+            bank.is_enabled,
+            bank.created_by,
+          ],
+        )
       }),
     )
 
@@ -117,7 +129,7 @@ async function seedQuestions(client) {
         created_by INT NOT NULL,
         FOREIGN KEY (created_by) REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
         updated_by INT NULL,
         FOREIGN KEY (updated_by) REFERENCES users(id),
         deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -132,18 +144,21 @@ async function seedQuestions(client) {
     // Insert data into the "questions" table
     const insertedQuestions = await Promise.all(
       questions.map(async (question) => {
-        return client.query(`
-          INSERT INTO questions (id, type, title, options, answer, analysis, bank_id, created_by)
-          VALUES (${question.id}, ${question.type}, '${question.title}', '${question.options}', '${question.answer}', '${question.analysis}', ${question.bank_id}, ${question.created_by})
-          ON DUPLICATE KEY UPDATE
-            type = VALUES(type),
-            title = VALUES(title),
-            options = VALUES(options),
-            answer = VALUES(answer),
-            analysis = VALUES(analysis),
-            bank_id = VALUES(bank_id),
-            created_by = VALUES(created_by);
-        `)
+        return client.query(
+          `
+            INSERT INTO questions (id, type, title, options, answer, analysis, bank_id, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+              type = VALUES(type),
+              title = VALUES(title),
+              options = VALUES(options),
+              answer = VALUES(answer),
+              analysis = VALUES(analysis),
+              bank_id = VALUES(bank_id),
+              created_by = VALUES(created_by);
+          `,
+          [question.id, question.type, question.title, question.options, question.answer, question.analysis, question.bank_id, question.created_by],
+        )
       }),
     )
 
@@ -159,12 +174,58 @@ async function seedQuestions(client) {
   }
 }
 
+async function seedRoles(client) {
+  try {
+    const [createTable] = await client.query(`
+      CREATE TABLE IF NOT EXISTS roles (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description VARCHAR(255) NULL,
+        is_enabled BOOLEAN NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP DEFAULT NULL,
+        UNIQUE KEY unique_name (name)
+      );
+    `)
+
+    console.log(`Created "roles" table`)
+
+    // Insert data into the "banks" table
+    const insertedRoles = await Promise.all(
+      roles.map(async (role) => {
+        return client.query(
+          `
+            INSERT INTO roles (id, name, description, is_enabled)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+              name = VALUES(name),
+              description = VALUES(description);
+          `,
+          [role.id, role.name, role.description, role.is_enabled],
+        )
+      }),
+    )
+
+    console.log(`Seeded ${insertedRoles.length} roles`)
+
+    return {
+      createTable,
+      banks: insertedRoles,
+    }
+  } catch (error) {
+    console.error('Error seeding roles:', error)
+    throw error
+  }
+}
+
 async function main() {
   const client = await db.getConnection()
 
   await seedUsers(client)
   await seedBanks(client)
   await seedQuestions(client)
+  await seedRoles(client)
 
   await client.release()
 }
