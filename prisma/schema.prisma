@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Users {
+  id               Int         @id @default(autoincrement())
+  name             String      @unique(map: "unique_user_name") @db.VarChar(255)
+  email            String      @unique(map: "unique_user_email") @db.VarChar(255)
+  password         String      @db.VarChar(255)
+  isEnabled        Int         @map("is_enabled") @db.TinyInt
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime?   @updatedAt @map("updated_at")
+  deletedAt        DateTime?   @map("deleted_at")
+  BanksCreated     Banks[]     @relation("BanksCreated")
+  BanksUpdated     Banks[]     @relation("BanksUpdated")
+  BanksDeleted     Banks[]     @relation("BanksDeleted")
+  QuestionsCreated Questions[] @relation("QuestionsCreated")
+  QuestionsUpdated Questions[] @relation("QuestionsUpdated")
+  QuestionsDeleted Questions[] @relation("QuestionsDeleted")
+}
+
+model Banks {
+  id             Int         @id @default(autoincrement())
+  name           String      @unique(map: "unique_bank_name") @db.VarChar(255)
+  description    String?     @db.VarChar(255)
+  isEnabled      Int         @map("is_enabled") @db.TinyInt
+  createdBy      Int         @map("created_by")
+  updatedBy      Int?        @map("updated_by")
+  deletedBy      Int?        @map("deleted_by")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime?   @updatedAt @map("updated_at")
+  deletedAt      DateTime?   @map("deleted_at")
+  UsersCreatedBy Users       @relation("BanksCreated", fields: [createdBy], references: [id])
+  UsersUpdatedBy Users?      @relation("BanksUpdated", fields: [updatedBy], references: [id])
+  UsersDeletedBy Users?      @relation("BanksDeleted", fields: [deletedBy], references: [id])
+  Questions      Questions[]
+}
+
+model Questions {
+  id             Int       @id @default(autoincrement())
+  type           Int?
+  title          String    @db.Text
+  options        String?   @db.Text
+  answer         String?   @db.Text
+  analysis       String?   @db.Text
+  bankId         Int       @map("bank_id")
+  createdBy      Int       @map("created_by")
+  updatedBy      Int?      @map("updated_by")
+  deletedBy      Int?      @map("deleted_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime? @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  Banks          Banks     @relation(fields: [bankId], references: [id])
+  UsersCreatedBy Users     @relation("QuestionsCreated", fields: [createdBy], references: [id])
+  UsersUpdatedBy Users?    @relation("QuestionsUpdated", fields: [updatedBy], references: [id])
+  UsersDeletedBy Users?    @relation("QuestionsDeleted", fields: [deletedBy], references: [id])
+
+  @@unique([title(length: 255), bankId], name: "unique_question_title_bank_id")
+}
+
+model Roles {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique(map: "unique_role_name") @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  isEnabled   Int       @map("is_enabled") @db.TinyInt
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+}
