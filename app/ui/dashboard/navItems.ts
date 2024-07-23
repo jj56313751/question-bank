@@ -5,7 +5,6 @@ import {
   DatabaseOutlined,
   ToolOutlined,
   SettingOutlined,
-  LogoutOutlined,
 } from '@ant-design/icons'
 
 const navItems: MenuProps['items'] = [
@@ -47,11 +46,6 @@ const navItems: MenuProps['items'] = [
       },
     ],
   },
-  // {
-  //   key: 'logout',
-  //   icon: React.createElement(LogoutOutlined),
-  //   label: '退出登录',
-  // },
 ]
 
 export default navItems

@@ -29,6 +29,7 @@ model Users {
   QuestionsCreated Questions[] @relation("QuestionsCreated")
   QuestionsUpdated Questions[] @relation("QuestionsUpdated")
   QuestionsDeleted Questions[] @relation("QuestionsDeleted")
+  UserRoles        UserRoles[]
 }
 
 model Banks {
@@ -50,7 +51,7 @@ model Banks {
 
 model Questions {
   id             Int       @id @default(autoincrement())
-  type           Int?
+  type           Int?      @db.SmallInt
   title          String    @db.Text
   options        String?   @db.Text
   answer         String?   @db.Text
@@ -71,11 +72,56 @@ model Questions {
 }
 
 model Roles {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique(map: "unique_role_name") @db.VarChar(255)
-  description String?   @db.VarChar(255)
-  isEnabled   Int       @map("is_enabled") @db.TinyInt
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id              Int               @id @default(autoincrement())
+  name            String            @unique(map: "unique_role_name") @db.VarChar(255)
+  description     String?           @db.VarChar(255)
+  isEnabled       Int               @map("is_enabled") @db.TinyInt
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime?         @updatedAt @map("updated_at")
+  deletedAt       DateTime?         @map("deleted_at")
+  UserRoles       UserRoles[]
+  RolePermissions RolePermissions[]
+}
+
+model Permissions {
+  id              Int               @id @default(autoincrement())
+  parentId        Int?              @map("parent_id")
+  type            Int               @db.SmallInt
+  name            String            @db.VarChar(255)
+  permission      String            @unique(map: "unique_permission") @db.VarChar(255)
+  path            String?           @db.VarChar(255)
+  icon            String?           @db.VarChar(255)
+  sort            Int?              @db.SmallInt
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime?         @updatedAt @map("updated_at")
+  deletedAt       DateTime?         @map("deleted_at")
+  RolePermissions RolePermissions[]
+}
+
+model UserRoles {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  roleId    Int       @map("role_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  Users     Users     @relation(fields: [userId], references: [id])
+  Roles     Roles     @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId], name: "unique_user_role")
+  @@map("user_roles")
+}
+
+model RolePermissions {
+  id           Int         @id @default(autoincrement())
+  roleId       Int         @map("role_id")
+  permissionId Int         @map("permission_id")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime?   @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+  Roles        Roles       @relation(fields: [roleId], references: [id])
+  Permissions  Permissions @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId], name: "unique_role_permission")
+  @@map("role_permissions")
 }

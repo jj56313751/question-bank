@@ -10,8 +10,22 @@ const users = [
   },
   {
     id: 2,
-    name: 'test',
-    email: 'test@qq.com',
+    name: 'shane',
+    email: 'shane@qq.com',
+    password: '123456788',
+    is_enabled: 1,
+  },
+  {
+    id: 3,
+    name: 'bank',
+    email: 'bank@qq.com',
+    password: '123456788',
+    is_enabled: 1,
+  },
+  {
+    id: 4,
+    name: 'user',
+    email: 'user@qq.com',
     password: '123456788',
     is_enabled: 1,
   },
@@ -129,10 +143,109 @@ const roles = [
   },
 ]
 
-// export { users, banks, questions }
+const permissions = [
+  {
+    id: 1,
+    parentId: null,
+    name: '快速搜题',
+    permission: 'dashboard_operate',
+    type: 2,
+    path: '/dashboard/operate',
+    icon: 'FileSearchOutlined',
+  },
+  {
+    id: 2,
+    parentId: null,
+    name: '题库管理',
+    permission: 'dashboard_bank',
+    type: 1,
+    path: '/dashboard/bank',
+    icon: 'DatabaseOutlined',
+  },
+  {
+    id: 3,
+    parentId: 2,
+    name: '题库列表',
+    permission: 'dashboard_bank_list',
+    type: 2,
+    path: '/list',
+    icon: null,
+  },
+  {
+    id: 4,
+    parentId: null,
+    name: '工具',
+    permission: 'dashboard_tools',
+    type: 1,
+    path: '/dashboard/tools',
+    icon: 'ToolOutlined',
+  },
+  {
+    id: 5,
+    parentId: 4,
+    name: '文档格式化',
+    permission: 'dashboard_tools_format',
+    type: 1,
+    path: '/format',
+    icon: null,
+  },
+  {
+    id: 6,
+    parentId: null,
+    name: '设置',
+    permission: 'dashboard_settings',
+    type: 1,
+    path: '/dashboard/settings',
+    icon: 'SettingOutlined',
+  },
+  {
+    id: 7,
+    parentId: 6,
+    name: '用户管理',
+    permission: 'dashboard_settings_users',
+    type: 2,
+    path: '/users',
+    icon: null,
+  },
+]
+
+const userRoles = [
+  { user_id: users[0].id, role_id: roles[0].id },
+  { user_id: users[0].id, role_id: roles[1].id },
+  { user_id: users[1].id, role_id: roles[1].id },
+  { user_id: users[2].id, role_id: roles[2].id },
+  { user_id: users[3].id, role_id: roles[3].id },
+]
+
+const rolePermissions = [
+  // 超级管理员
+  { role_id: roles[0].id, permission_id: permissions[0].id },
+  { role_id: roles[0].id, permission_id: permissions[1].id },
+  { role_id: roles[0].id, permission_id: permissions[2].id },
+  { role_id: roles[0].id, permission_id: permissions[3].id },
+  { role_id: roles[0].id, permission_id: permissions[4].id },
+  { role_id: roles[0].id, permission_id: permissions[5].id },
+  { role_id: roles[0].id, permission_id: permissions[6].id },
+  // 管理员
+  { role_id: roles[1].id, permission_id: permissions[0].id },
+  { role_id: roles[1].id, permission_id: permissions[1].id },
+  { role_id: roles[1].id, permission_id: permissions[2].id },
+  { role_id: roles[1].id, permission_id: permissions[3].id },
+  { role_id: roles[1].id, permission_id: permissions[4].id },
+  { role_id: roles[1].id, permission_id: permissions[5].id },
+  // 题库管理员
+  { role_id: roles[2].id, permission_id: permissions[1].id },
+  { role_id: roles[2].id, permission_id: permissions[2].id },
+  // 普通用户
+  { role_id: roles[3].id, permission_id: permissions[0].id },
+]
+
 module.exports = {
   users,
   banks,
   questions,
   roles,
+  permissions,
+  userRoles,
+  rolePermissions,
 }
