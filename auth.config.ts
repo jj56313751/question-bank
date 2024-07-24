@@ -28,6 +28,16 @@ export const authConfig = {
       // other pages can view directly
       return true
     },
+    async jwt({ token, user }) {
+      if (user) { // User is available during sign-in
+        token.id = user.id
+      }
+      return token
+    },
+    session({ session, token }) {
+      (session.user as any).id = Number(token.id)
+      return session
+    },
   },
   providers: [], // Add providers with an empty array for now
 } satisfies NextAuthConfig

@@ -1,11 +1,11 @@
 import NextAuth from 'next-auth'
-import { authConfig } from './auth.config';
+import { authConfig } from './auth.config'
 import Credentials from 'next-auth/providers/credentials'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
 import { getUserByNameOrEmail } from '@/app/lib/data'
 
-export const { signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth({
   // debug: true,
   ...authConfig,
   providers: [
@@ -28,7 +28,7 @@ export const { signIn, signOut, auth } = NextAuth({
 
             console.log('Invalid credentials')
             return null
-          } catch(error) {
+          } catch (error) {
             console.log('[error]-34', error)
             console.log(error)
           }

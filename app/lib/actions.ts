@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { signIn, signOut } from '@/auth'
+import { signIn, signOut, auth } from '@/auth'
 import { AuthError } from 'next-auth'
 import { intPassword } from '@/app/lib/constant'
 import prisma from '@/app/lib/prisma'
@@ -21,7 +21,7 @@ const BankSchema = z.object({
     required_error: 'name is required',
     invalid_type_error: 'name must be a string',
   }),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   isEnabled: z
     .union([z.literal(0), z.literal(1)])
     .refine((val) => val === 0 || val === 1, {
@@ -63,7 +63,7 @@ const QuestionSchema = z.object({
     required_error: 'answer is required',
     invalid_type_error: 'answer must be a string',
   }),
-  analysis: z.string().optional(),
+  analysis: z.string().nullable().optional(),
   bankId: z.number({
     required_error: 'bankId is required',
     invalid_type_error: 'bankId must be a number',
@@ -127,8 +127,9 @@ const UpdateUser = UserSchema.omit({
 })
 
 export async function createBank(formData: any) {
-  // TODO Add logged in userid
-  formData.createdBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.createdBy = session && ((session.user as any).id as number)
 
   const validatedFields = CreateBank.safeParse(formData)
   if (!validatedFields.success) {
@@ -158,8 +159,9 @@ export async function createBank(formData: any) {
 }
 
 export async function updateBank(id: number, formData: any) {
-  // TODO Add logged in userid
-  formData.updatedBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.updatedBy = session && ((session.user as any).id as number)
 
   const validatedFields = UpdateBank.safeParse(formData)
   if (!validatedFields.success) {
@@ -194,10 +196,12 @@ export async function updateBank(id: number, formData: any) {
 }
 
 export async function createQuestion(formData: any) {
-  // TODO Add logged in userid
-  formData.createdBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.createdBy = session && ((session.user as any).id as number)
 
   const validatedFields = CreateQuestion.safeParse(formData)
+  console.log('[validatedFields]-207', validatedFields)
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -229,8 +233,9 @@ export async function createQuestion(formData: any) {
 }
 
 export async function updateQuestion(id: number, formData: any) {
-  // TODO Add logged in userid
-  formData.updatedBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.updatedBy = session && ((session.user as any).id as number)
 
   const validatedFields = UpdateQuestion.safeParse(formData)
   if (!validatedFields.success) {
@@ -265,8 +270,9 @@ export async function updateQuestion(id: number, formData: any) {
 }
 
 export async function deleteQuestion(id: number, bankId: number) {
-  // TODO Add logged in userid
-  const deletedBy = 1
+  const session = await auth()
+  // Add logged in userid
+  const deletedBy = session && ((session.user as any).id as number)
 
   const validatedFields = DeleteQuestion.safeParse({
     id,
@@ -298,8 +304,9 @@ export async function deleteQuestion(id: number, bankId: number) {
 }
 
 export async function importQuestions(bankId: number, data: any[]) {
-  // TODO Add logged in userid
-  const createdBy = 1
+  const session = await auth()
+  // Add logged in userid
+  const createdBy: any = session && ((session.user as any).id as number)
   const upsertOperations: any[] = []
 
   data.forEach((question: any) => {
@@ -372,7 +379,6 @@ export async function signOutAction() {
   try {
     await signOut()
   } catch (error) {
-    console.log('[error]-339', error)
     if (error instanceof AuthError) {
       console.log('[error.type]-339', error.type)
     }
