@@ -298,7 +298,6 @@ export async function fetchUserRolesPermissions({ id }: { id: number }) {
       permissions,
       '/dashboard',
     )) // set root path /dashboard
-    console.log('[permissionPaths]-298', permissionPaths)
 
     return {
       roles,
