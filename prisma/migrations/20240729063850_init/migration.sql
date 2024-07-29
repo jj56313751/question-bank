@@ -70,6 +70,7 @@ CREATE TABLE `Permissions` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `parent_id` INTEGER NULL,
     `type` SMALLINT NOT NULL,
+    `is_menu` TINYINT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     `permission` VARCHAR(255) NOT NULL,
     `path` VARCHAR(255) NULL,

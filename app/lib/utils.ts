@@ -44,3 +44,24 @@ export function objectHavingKeys(
     itemKeys.every((key) => keys.includes(key))
   )
 }
+
+export function getAllPathsFromPermissions(permissions: any[], root: string) {
+  const result: string[] = []
+
+  function traverse(routes: any[], basePath: string) {
+    for (let route of routes) {
+      // only consider path
+      if (route.type !== 1 || !route.path) continue
+      const fullPath = basePath + '/' + route.path
+      if (route.children && route.children.length) {
+        traverse(route.children, fullPath)
+      } else {
+        result.push(fullPath)
+      }
+    }
+  }
+
+  traverse(permissions, root)
+
+  return result
+}

@@ -6,7 +6,7 @@ import BreadcrumbItem from 'antd/lib/breadcrumb/BreadcrumbItem'
 import { Layout as AntLayout } from 'antd'
 import { Header, Content, Footer } from 'antd/lib/layout/layout'
 import Sider from 'antd/lib/layout/Sider'
-import navItems from './navItems'
+import navItems from './config'
 
 export default function DashboardContent({
   children,

@@ -1,19 +1,29 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Menu, Button, Modal } from 'antd'
-import navItems from './navItems'
+import { generateSideNavs } from './config'
 import { LogoutOutlined } from '@ant-design/icons'
 import { signOutAction } from '@/app/lib/actions'
+// import { useSession, getSession } from 'next-auth/react'
 
-export default function SideBar({}) {
+export default function SideNav({ session }: { session: any }) {
+  // 待官方修复，SessionProvider中需要手动刷新才能获取session https://github.com/nextauthjs/next-auth/issues/9504
+  // const session: any = useSession()
   const router = useRouter()
   const pathName = usePathname()
   const defaultSelectedKeys: string[] = ['operate']
   const [selectedKeys, setSelectedkeys] =
     useState<string[]>(defaultSelectedKeys)
   const [openKeys, setOpenKeys] = useState<string[]>()
+  const [navItems, setNavItems] = useState<any[]>([])
   useEffect(() => {
+    // if (session.data?.user?.permissions) {
+    //   setNavItems(generateSideNavs(session.data?.user?.permissions))
+    // }
+    if (session.user?.permissions) {
+      setNavItems(generateSideNavs(session.user?.permissions))
+    }
     const path = pathName.split('/')
     const keys = path.filter((item) => item)
     keys.shift() // remove /dashboard
@@ -22,9 +32,7 @@ export default function SideBar({}) {
       // open children
       setOpenKeys(keys.slice(0, -1))
     }
-  }, [pathName])
-  // console.log('selectedKeys', selectedKeys)
-  // console.log('openKeys', openKeys)
+  }, [pathName, session])
 
   const onMeunClick = (e: any) => {
     const { keyPath } = e

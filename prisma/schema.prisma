@@ -87,6 +87,7 @@ model Permissions {
   id              Int               @id @default(autoincrement())
   parentId        Int?              @map("parent_id")
   type            Int               @db.SmallInt
+  isMenu          Int               @map("is_menu") @db.TinyInt
   name            String            @db.VarChar(255)
   permission      String            @unique(map: "unique_permission") @db.VarChar(255)
   path            String?           @db.VarChar(255)

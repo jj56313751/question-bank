@@ -1,25 +1,28 @@
 import type { NextAuthConfig } from 'next-auth'
-import { NextResponse } from 'next/server'
+import routeAuthMiddleware from '@/middleware/routeAuthMiddleware'
+import reqHeadersMiddleware from '@/middleware/reqHeadersMiddleware'
 
 export const authConfig = {
   pages: {
     signIn: '/login',
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl, headers, url } }) {
-      // console.log('[nextUrl]-9', nextUrl)
+    authorized(params) {
+      const {
+        auth,
+        request: { nextUrl },
+      } = params
+      // console.log('[auth]-10', auth)
       const isLoggedIn = !!auth?.user
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
       if (isOnDashboard) {
         if (isLoggedIn) {
+          // verify page permission
+          const routeAuthRes = routeAuthMiddleware(params)
+          if (routeAuthRes) return routeAuthRes
           // add reqHeaders to request
-          const reqHeaders = new Headers(headers)
-          reqHeaders.set('x-request-url', url)
-          return NextResponse.next({
-            request: {
-              headers: reqHeaders,
-            },
-          })
+          const reqHeadersRes = reqHeadersMiddleware(params)
+          if (reqHeadersRes) return reqHeadersRes
         }
         return false // Redirect unauthenticated users to login page
       } else if (isLoggedIn) {
@@ -29,13 +32,23 @@ export const authConfig = {
       return true
     },
     async jwt({ token, user }) {
-      if (user) { // User is available during sign-in
+      if (user) {
+        // User is available during sign-in
+        // console.log('[user]-33', user)
         token.id = user.id
+        token.roles = (user as any).roles
+        token.permissions = (user as any).permissions
+        token.permissionPaths = (user as any).permissionPaths
+        token.permissionNames = (user as any).permissionNames
       }
       return token
     },
     session({ session, token }) {
-      (session.user as any).id = Number(token.id)
+      ;(session.user as any).id = Number(token.id)
+      ;(session.user as any).roles = token.roles
+      ;(session.user as any).permissions = token.permissions
+      ;(session.user as any).permissionPaths = token.permissionPaths
+      ;(session.user as any).permissionNames = token.permissionNames
       return session
     },
   },

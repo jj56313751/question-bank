@@ -1,6 +1,8 @@
 import type { Page } from './types'
 import { Prisma } from '@prisma/client'
 import prisma from '@/app/lib/prisma'
+import type { PermissionItem } from '@/app/lib/definitions'
+import { getAllPathsFromPermissions } from '@/app/lib/utils'
 
 export async function fetchBanks({
   id,
@@ -216,6 +218,142 @@ export async function fetchUsers({
   } catch (error) {
     console.error('Database Error:', error)
     throw new Error('Failed to fetch Users.')
+  }
+}
+
+function buildNestedPermissions(
+  permissions: PermissionItem[],
+  parentId = null,
+): Array<PermissionItem & { children: PermissionItem[] }> {
+  return permissions
+    .filter((permission: any) => permission.parentId === parentId)
+    .map((permission: any) => ({
+      ...permission,
+      children: buildNestedPermissions(permissions, permission.id),
+    }))
+}
+
+export async function fetchUserRolesPermissions({ id }: { id: number }) {
+  try {
+    const res = await prisma.userRoles.findMany({
+      where: { userId: id },
+      select: {
+        Roles: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            RolePermissions: {
+              select: {
+                Permissions: {
+                  select: {
+                    id: true,
+                    parentId: true,
+                    type: true,
+                    name: true,
+                    permission: true,
+                    path: true,
+                    icon: true,
+                    sort: true,
+                    isMenu: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const roles: any = []
+
+    const permissionNames: string[] = []
+    const permissionsMap: Map<number, PermissionItem> = new Map()
+
+    res.forEach((item) => {
+      roles.push({
+        id: item.Roles.id,
+        name: item.Roles.name,
+        description: item.Roles.description,
+      })
+      item.Roles.RolePermissions.forEach((rolePermission) => {
+        if (!permissionsMap.has(rolePermission.Permissions.id)) {
+          permissionsMap.set(
+            rolePermission.Permissions.id,
+            rolePermission.Permissions,
+          )
+        }
+      })
+    })
+
+    for (const [id, permission] of permissionsMap) {
+      permissionNames.push(permission.permission)
+    }
+
+    const permissions: any[] = buildNestedPermissions([
+      ...permissionsMap.values(),
+    ])
+
+    const permissionPaths: string[] = ([] = getAllPathsFromPermissions(
+      permissions,
+      '/dashboard',
+    )) // set root path /dashboard
+    console.log('[permissionPaths]-298', permissionPaths)
+
+    return {
+      roles,
+      permissions,
+      permissionPaths,
+      permissionNames,
+    }
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch UserRolesPermissions.')
+  }
+}
+
+export async function fetchAllNestedPermissions() {
+  try {
+    const permissions = await prisma.permissions.findMany({
+      select: {
+        id: true,
+        parentId: true,
+        type: true,
+        name: true,
+        permission: true,
+        path: true,
+        icon: true,
+        sort: true,
+        isMenu: true,
+      },
+    })
+
+    return buildNestedPermissions(permissions)
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch AllNestedPermissions.')
+  }
+}
+
+export async function fetchPermissions() {
+  try {
+    const permissions = await prisma.permissions.findMany({
+      select: {
+        id: true,
+        parentId: true,
+        type: true,
+        name: true,
+        permission: true,
+        path: true,
+        icon: true,
+        sort: true,
+      },
+    })
+
+    return permissions
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch AllPermisions.')
   }
 }
 

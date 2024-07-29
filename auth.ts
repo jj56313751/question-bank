@@ -3,7 +3,7 @@ import { authConfig } from './auth.config'
 import Credentials from 'next-auth/providers/credentials'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
-import { getUserByNameOrEmail } from '@/app/lib/data'
+import { getUserByNameOrEmail, fetchUserRolesPermissions } from '@/app/lib/data'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // debug: true,
@@ -24,7 +24,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             const user = userRes[0]
 
             const passwordsMatch = await bcrypt.compare(password, user.password)
-            if (passwordsMatch) return user
+            if (passwordsMatch) {
+              const { roles, permissions, permissionPaths, permissionNames } =
+                await fetchUserRolesPermissions({ id: user.id })
+              user.roles = roles
+              user.permissions = permissions
+              user.permissionPaths = permissionPaths
+              user.permissionNames = permissionNames
+
+              return user
+            }
 
             console.log('Invalid credentials')
             return null

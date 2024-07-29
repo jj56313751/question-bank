@@ -3,6 +3,7 @@
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
 import { questionTypesMap } from './constant'
+import type { Permissions } from '@prisma/client'
 export interface CommonDate {
   created_at?: string
   updated_at?: string
@@ -39,3 +40,8 @@ export interface Question extends CommonDate {
   updated_by?: number
   deleted_by?: number
 }
+
+export type PermissionItem = Omit<
+  Permissions,
+  'createdAt' | 'updatedAt' | 'deletedAt'
+>

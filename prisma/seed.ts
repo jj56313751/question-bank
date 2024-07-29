@@ -135,6 +135,7 @@ async function seedPermissions() {
           path: permission.path,
           icon: permission.icon,
           sort: permission.sort,
+          isMenu: permission.is_menu,
         },
         create: {
           // 如果不存在，创建
@@ -145,6 +146,7 @@ async function seedPermissions() {
           path: permission.path,
           icon: permission.icon,
           sort: permission.sort,
+          isMenu: permission.is_menu,
         },
       }),
     )

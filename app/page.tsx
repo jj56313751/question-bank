@@ -1,9 +1,3 @@
-
-
-export default function Page() {
-  return (
-    <main className="">
-      main
-    </main>
-  );
+export default async function Page() {
+  return <main className="">main</main>
 }
