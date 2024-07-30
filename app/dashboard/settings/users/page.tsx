@@ -8,7 +8,7 @@ import { UserList } from '@/app/lib/types'
 import UserCreate from '@/app/ui/dashboard/settings/users/user-create'
 
 export const metadata: Metadata = {
-  title: '用户列表',
+  title: '用户管理',
 }
 
 export default async function Page({
