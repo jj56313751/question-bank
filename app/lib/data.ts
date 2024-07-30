@@ -371,7 +371,7 @@ export async function fetchRoles({
       where.id = id
     }
     if (description) {
-      where.description = description
+      where.description = { contains: description }
     }
 
     const offset = (pageNumber - 1) * Number(pageSize)
