@@ -55,7 +55,7 @@ CREATE TABLE `Questions` (
 CREATE TABLE `Roles` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
-    `description` VARCHAR(255) NULL,
+    `description` VARCHAR(255) NOT NULL,
     `is_enabled` TINYINT NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,

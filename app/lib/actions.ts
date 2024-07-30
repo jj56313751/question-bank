@@ -105,9 +105,18 @@ const ImportQuestion = QuestionSchema.pick({
 
 const UserSchema = z.object({
   id: z.number(),
-  name: z.string(),
-  email: z.string(),
-  password: z.string(),
+  name: z.string({
+    required_error: 'name is required',
+    invalid_type_error: 'name must be a string',
+  }),
+  email: z.string({
+    required_error: 'email is required',
+    invalid_type_error: 'email must be a string',
+  }),
+  password: z.string({
+    required_error: 'password is required',
+    invalid_type_error: 'password must be a string',
+  }),
   isEnabled: z
     .union([z.literal(0), z.literal(1)])
     .refine((val) => val === 0 || val === 1, {
@@ -125,6 +134,27 @@ const UpdateUser = UserSchema.omit({
   name: true,
   email: true,
 })
+
+const RoleSchema = z.object({
+  id: z.number(),
+  name: z.string({
+    required_error: 'name is required',
+    invalid_type_error: 'name must be a string',
+  }),
+  description: z.string({
+    required_error: 'description is required',
+    invalid_type_error: 'description must be a string',
+  }),
+  isEnabled: z
+    .union([z.literal(0), z.literal(1)])
+    .refine((val) => val === 0 || val === 1, {
+      message: 'isEnabled must be either 0 or 1',
+    }),
+})
+
+const CreateRole = RoleSchema.omit({ id: true })
+
+const UpdateRole = RoleSchema.omit({ id: true })
 
 export async function createBank(formData: any) {
   const session = await auth()
@@ -201,7 +231,7 @@ export async function createQuestion(formData: any) {
   formData.createdBy = session && ((session.user as any).id as number)
 
   const validatedFields = CreateQuestion.safeParse(formData)
-  console.log('[validatedFields]-207', validatedFields)
+  // console.log('[validatedFields]-207', validatedFields)
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -434,6 +464,62 @@ export async function resetUserPassowrd(id: number) {
       code: error.code || -1,
       message:
         error.message || 'Database Error: Failed to Reset User Password.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function createRole(formData: any) {
+  const validatedFields = CreateRole.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Role.',
+    }
+  }
+  const { name, description, isEnabled } = validatedFields.data
+
+  try {
+    await prisma.roles.create({
+      data: {
+        name,
+        description,
+        isEnabled,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Create Role.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateRole(id: number, formData: any) {
+  const validatedFields = UpdateRole.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Role.',
+    }
+  }
+
+  const { name, description, isEnabled } = validatedFields.data
+
+  try {
+    await prisma.roles.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        isEnabled,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Update Role.',
     }
   }
   revalidateCurrentPath()
