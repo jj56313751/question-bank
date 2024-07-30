@@ -1,7 +1,7 @@
 'use client'
 import { UserList } from '@/app/lib/types'
 import { Modal, Form, Input, Switch } from 'antd'
-import { intPassword } from '@/app/lib/constant'
+// import { intPassword } from '@/app/lib/constant'
 
 export default function UserEditModal({
   title,
@@ -39,11 +39,9 @@ export default function UserEditModal({
         {...layout}
         form={form}
         name={'user-' + title}
-        initialValues={
-          initialValues || {
-            isEnabled: 1,
-          }
-        }
+        initialValues={{
+          isEnabled: 1,
+        }}
         style={formStyle}
       >
         <Form.Item

@@ -34,7 +34,7 @@ export default function QuestionEditModal({
 
   useEffect(() => {
     if (initialValues) {
-      console.log('[initialValues]-35', initialValues)
+      // console.log('[initialValues]-35', initialValues)
       form.setFieldsValue(initialValues) // reset int value
     }
   }, [initialValues, form])
@@ -48,13 +48,7 @@ export default function QuestionEditModal({
       okText="确定"
       cancelText="取消"
     >
-      <Form
-        {...layout}
-        form={form}
-        name="question-edit"
-        initialValues={initialValues}
-        style={formStyle}
-      >
+      <Form {...layout} form={form} name={'qustion-' + title} style={formStyle}>
         <Form.Item
           name="type"
           label="类型"
