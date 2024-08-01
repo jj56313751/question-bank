@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import { Button, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import RoleEditModal from './role-edit-modal'
-import { createRole } from '@/app/lib/actions'
+import MenuEditModal from './menu-edit-modal'
+import { createPermission } from '@/app/lib/actions'
 
 export default function Create() {
   const [visible, setVisible] = useState<boolean>(false)
@@ -14,9 +14,9 @@ export default function Create() {
       .validateFields()
       .then(async (values: any) => {
         // console.log('[values]-18', values)
-        // TODO: default enabled
-        values.isEnabled = 1
-        const err = await createRole(values)
+        values.isMenu = +values.isMenu
+        values.type = +values.type
+        const err = await createPermission(values)
         // console.log('[err]-20', err)
         if (!err) {
           messageApi.success('新增成功')
@@ -24,7 +24,7 @@ export default function Create() {
           form.resetFields()
         } else {
           if (err.code === 'P2002') {
-            messageApi.error('角色名称已存在')
+            messageApi.error('权限名称已存在')
           } else {
             messageApi.error(err.message)
           }
@@ -42,10 +42,10 @@ export default function Create() {
         icon={<PlusOutlined />}
         onClick={() => setVisible(true)}
       >
-        新增角色
+        新增模块
       </Button>
-      <RoleEditModal
-        title="新增"
+      <MenuEditModal
+        title="新建"
         visible={visible}
         handleOk={handleOk}
         handleCancel={() => setVisible(false)}

@@ -156,6 +156,32 @@ const CreateRole = RoleSchema.omit({ id: true })
 
 const UpdateRole = RoleSchema.omit({ id: true })
 
+const PermissionSchema = z.object({
+  id: z.number(),
+  parentId: z.number().nullable().optional(),
+  type: z.number(),
+  isMenu: z
+    .union([z.literal(0), z.literal(1)])
+    .refine((val) => val === 0 || val === 1, {
+      message: 'isEnabled must be either 0 or 1',
+    }),
+  name: z.string({
+    required_error: 'name is required',
+    invalid_type_error: 'name must be a string',
+  }),
+  permission: z.string({
+    required_error: 'permission is required',
+    invalid_type_error: 'permission must be a string',
+  }),
+  path: z.string().nullable().optional(),
+  icon: z.string().nullable().optional(),
+  sort: z.number().nullable().optional(),
+})
+
+const CreatePermission = PermissionSchema.omit({ id: true })
+
+const UpdatePermission = PermissionSchema.omit({ id: true })
+
 export async function createBank(formData: any) {
   const session = await auth()
   // Add logged in userid
@@ -520,6 +546,74 @@ export async function updateRole(id: number, formData: any) {
     return {
       code: error.code || -1,
       message: error.message || 'Database Error: Failed to Update Role.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function createPermission(formData: any) {
+  const validatedFields = CreatePermission.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Permission.',
+    }
+  }
+  const { parentId, type, isMenu, name, permission, path, icon, sort } =
+    validatedFields.data
+
+  try {
+    await prisma.permissions.create({
+      data: {
+        parentId,
+        type,
+        isMenu,
+        name,
+        permission,
+        path,
+        icon,
+        sort,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Create Permission.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updatePermission(id: number, formData: any) {
+  const validatedFields = UpdatePermission.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Permission.',
+    }
+  }
+
+  const { parentId, type, isMenu, name, permission, path, icon, sort } =
+    validatedFields.data
+
+  try {
+    await prisma.permissions.update({
+      where: { id },
+      data: {
+        parentId,
+        type,
+        isMenu,
+        name,
+        permission,
+        path,
+        icon,
+        sort,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Update Permission.',
     }
   }
   revalidateCurrentPath()

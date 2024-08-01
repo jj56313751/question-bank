@@ -224,7 +224,7 @@ export async function fetchUsers({
 function buildNestedPermissions(
   permissions: PermissionItem[],
   parentId = null,
-): Array<PermissionItem & { children: PermissionItem[] }> {
+): Array<PermissionItem & { children?: PermissionItem[] }> {
   return permissions
     .filter((permission: any) => permission.parentId === parentId)
     .map((permission: any) => ({

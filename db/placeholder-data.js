@@ -227,6 +227,16 @@ const permissions = [
   {
     id: 9,
     parentId: 7,
+    name: '菜单管理',
+    permission: 'dashboard_settings_menus',
+    type: 1,
+    path: 'menus',
+    icon: null,
+    is_menu: 1,
+  },
+  {
+    id: 10,
+    parentId: 7,
     name: '角色管理',
     permission: 'dashboard_settings_roles',
     type: 1,
@@ -235,7 +245,7 @@ const permissions = [
     is_menu: 1,
   },
   {
-    id: 10,
+    id: 11,
     parentId: 7,
     name: '权限管理',
     permission: 'dashboard_settings_permissions',
@@ -266,6 +276,7 @@ const rolePermissions = [
   { role_id: roles[0].id, permission_id: permissions[7].id },
   { role_id: roles[0].id, permission_id: permissions[8].id },
   { role_id: roles[0].id, permission_id: permissions[9].id },
+  { role_id: roles[0].id, permission_id: permissions[10].id },
   // 管理员
   { role_id: roles[1].id, permission_id: permissions[0].id },
   { role_id: roles[1].id, permission_id: permissions[1].id },

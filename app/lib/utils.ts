@@ -1,3 +1,6 @@
+import type { PermissionItem } from '@/app/lib/definitions'
+import type { TreeDataNode } from 'antd'
+
 export const toCamelCase = (row: Record<string, any>) => {
   const newRow: Record<string, any> = {}
   for (const key in row) {
@@ -64,4 +67,26 @@ export function getAllPathsFromPermissions(permissions: any[], root: string) {
   traverse(permissions, root)
 
   return result
+}
+
+interface PermissionTrees extends PermissionItem {
+  children?: PermissionTrees[]
+}
+
+export function nestedPermissionsToAntdTrees(
+  nestedPermissions: PermissionTrees[],
+): Array<TreeDataNode & PermissionTrees> {
+  return nestedPermissions.map((permission) => {
+    const node: TreeDataNode = {
+      key: permission.id,
+      title: permission.name,
+    }
+    if (permission.children && permission.children.length) {
+      permission.children = nestedPermissionsToAntdTrees(permission.children)
+    }
+    return {
+      ...permission,
+      ...node,
+    }
+  }) as Array<TreeDataNode & PermissionTrees>
 }

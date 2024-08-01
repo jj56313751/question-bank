@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { Modal, Form, Input, Switch } from 'antd'
 import type { Roles } from '@prisma/client'
 
-export default function UserEditModal({
+export default function EditModal({
   title,
   visible,
   handleOk,
