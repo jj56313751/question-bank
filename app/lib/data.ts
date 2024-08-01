@@ -73,6 +73,38 @@ export async function fetchBanks({
   }
 }
 
+export async function fetchAllBanks({
+  id,
+  name,
+  isEnabled,
+}: {
+  id?: number
+  name?: string
+  isEnabled?: number
+}) {
+  try {
+    const where: Prisma.BanksWhereInput = {
+      deletedAt: null,
+    }
+    if (id !== undefined) where.id = Number(id)
+    if (name !== undefined) where.name = name
+    if (isEnabled !== undefined) where.isEnabled = Number(isEnabled)
+
+    return await prisma.banks.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isEnabled: true,
+      },
+    })
+  } catch (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to fetch banks list data.')
+  }
+}
+
 export async function fetchQuestions({
   bankId,
   title,
