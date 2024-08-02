@@ -45,3 +45,7 @@ export type PermissionItem = Omit<
   Permissions,
   'createdAt' | 'updatedAt' | 'deletedAt'
 >
+
+export interface PermissionTrees extends PermissionItem {
+  children?: PermissionTrees[]
+}

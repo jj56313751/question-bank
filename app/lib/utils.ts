@@ -1,4 +1,4 @@
-import type { PermissionItem } from '@/app/lib/definitions'
+import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
 import type { TreeDataNode } from 'antd'
 
 export const toCamelCase = (row: Record<string, any>) => {
@@ -69,8 +69,16 @@ export function getAllPathsFromPermissions(permissions: any[], root: string) {
   return result
 }
 
-interface PermissionTrees extends PermissionItem {
-  children?: PermissionTrees[]
+export function buildNestedPermissions(
+  permissions: PermissionItem[],
+  parentId = null,
+): PermissionTrees[] {
+  return permissions
+    .filter((permission: any) => permission.parentId === parentId)
+    .map((permission: any) => ({
+      ...permission,
+      children: buildNestedPermissions(permissions, permission.id),
+    }))
 }
 
 export function nestedPermissionsToAntdTrees(

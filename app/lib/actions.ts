@@ -182,6 +182,12 @@ const CreatePermission = PermissionSchema.omit({ id: true })
 
 const UpdatePermission = PermissionSchema.omit({ id: true })
 
+const RolePermissionsSchema = z.object({
+  id: z.number(),
+  roleId: z.number(),
+  permissionId: z.number(),
+})
+
 export async function createBank(formData: any) {
   const session = await auth()
   // Add logged in userid
@@ -614,6 +620,40 @@ export async function updatePermission(id: number, formData: any) {
     return {
       code: error.code || -1,
       message: error.message || 'Database Error: Failed to Update Permission.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateRolePermissions(
+  roleId: number,
+  permissionIds: number[],
+) {
+  const operations: any[] = [
+    prisma.rolePermissions.deleteMany({
+      where: {
+        roleId,
+      },
+    }),
+  ]
+  permissionIds.forEach((permissionId) => {
+    operations.push(
+      prisma.rolePermissions.create({
+        data: {
+          roleId,
+          permissionId,
+        },
+      }),
+    )
+  })
+
+  try {
+    const res = await prisma.$transaction(operations)
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message:
+        error.message || 'Database Error: Failed to Update Role Permissions.',
     }
   }
   revalidateCurrentPath()

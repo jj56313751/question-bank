@@ -1,16 +1,16 @@
 'use client'
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import { Tree, Button, Flex, message } from 'antd'
-import type { TreeDataNode, TreeProps } from 'antd'
+// import type { TreeDataNode, TreeProps } from 'antd'
 import MenuEditModal from './menu-edit-modal'
 import { createPermission, updatePermission } from '@/app/lib/actions'
 // import { nestedPermissionsToAntdTrees } from '@/app/lib/utils'
-import type { PermissionItem } from '@/app/lib/definitions'
+import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
 
 export default function Content({
   nestedPermissions,
 }: {
-  nestedPermissions: Array<PermissionItem & { children?: PermissionItem[] }>
+  nestedPermissions: PermissionTrees[]
 }) {
   // const treeData = useMemo(
   //   () => nestedPermissionsToAntdTrees(nestedPermissions),
