@@ -5,7 +5,12 @@ import { z } from 'zod'
 import bcrypt from 'bcrypt'
 import { getUserByNameOrEmail, fetchUserRolesPermissions } from '@/app/lib/data'
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const {
+  handlers: { GET, POST },
+  signIn,
+  signOut,
+  auth,
+} = NextAuth({
   // debug: true,
   ...authConfig,
   providers: [

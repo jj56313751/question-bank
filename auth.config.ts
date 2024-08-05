@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from 'next-auth'
 import routeAuthMiddleware from '@/middleware/routeAuthMiddleware'
 import reqHeadersMiddleware from '@/middleware/reqHeadersMiddleware'
+import apiAuthMiddleware from '@/middleware/apiAuthMiddleware'
 
 export const authConfig = {
   pages: {
@@ -13,8 +14,15 @@ export const authConfig = {
         request: { nextUrl },
       } = params
       // console.log('[auth]-10', auth)
+      // console.log('[params.request]-10', params.request)
       const isLoggedIn = !!auth?.user
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
+      const isOnLogin = nextUrl.pathname.startsWith('/login')
+      const isApi = nextUrl.pathname.startsWith('/api')
+      if (isApi) {
+        const apiAuthRes = apiAuthMiddleware(params)
+        if (apiAuthRes) return apiAuthRes
+      }
       if (isOnDashboard) {
         if (isLoggedIn) {
           // verify page permission
@@ -25,7 +33,7 @@ export const authConfig = {
           if (reqHeadersRes) return reqHeadersRes
         }
         return false // Redirect unauthenticated users to login page
-      } else if (isLoggedIn) {
+      } else if (isOnLogin && isLoggedIn) {
         return Response.redirect(new URL('/dashboard', nextUrl))
       }
       // other pages can view directly
