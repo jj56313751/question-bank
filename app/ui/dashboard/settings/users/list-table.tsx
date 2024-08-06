@@ -1,11 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Space, Table, message, Tag, Modal } from 'antd'
 import type { TableProps } from 'antd'
 import { UserList } from '@/app/lib/types'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
-// import BankEditModal from './user-edit-modal'
-import { resetUserPassowrd } from '@/app/lib/actions'
+import UserEditModal from './user-edit-modal'
+import { resetUserPassowrd, updateUserNRoles } from '@/app/lib/actions'
 import { isEnabledMap } from '@/app/lib/constant'
 import dayjs from 'dayjs'
 
@@ -102,10 +102,9 @@ export default function ListTable({
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
-          {/* TODO Edit authorization */}
-          {/* <Button type="link" onClick={onEditClick(record)}>
+          <Button type="link" onClick={onEditClick(record)}>
             编辑
-          </Button> */}
+          </Button>
           <Button type="link" onClick={onResetPasswordClick(record)}>
             重置密码
           </Button>
@@ -114,44 +113,53 @@ export default function ListTable({
     },
   ]
 
-  // const [editVisible, setEditVisible] = useState<boolean>(false)
+  const [editVisible, setEditVisible] = useState<boolean>(false)
   const [editId, setEditId] = useState<number>()
-  // const [editInitialValues, setEditInitialValues] =
-  //   useState<Pick<UserList, 'name' | 'email' | 'isEnabled'>>()
+  const [editInitialValues, setEditInitialValues] =
+    useState<Pick<UserList, 'name' | 'email' | 'isEnabled'>>()
+  const [allRoles, setAllRoles] = useState<any[]>([])
+  useEffect(() => {
+    const fetchAllRoles = async () => {
+      const res: any = await fetch('/api/roles/all')
+      // console.log('[res]-124', res)
+      const data = await res.json()
+      // console.log('[data]-127', data)
+      if (data && data.code === 200) {
+        setAllRoles(data.result)
+      }
+    }
+    fetchAllRoles()
+  }, [])
 
-  // const onEditClick = (record: UserList) => () => {
-  //   // console.log('[record]-112', record)
-  //   setEditId(record.id)
-  //   setEditInitialValues({
-  //     name: record.name,
-  //     email: record.email,
-  //     isEnabled: record.isEnabled,
-  //   })
-  //   setEditVisible(true)
-  // }
+  const onEditClick = (record: UserList) => () => {
+    // console.log('[record]-112', record)
+    setEditId(record.id)
+    setEditInitialValues({
+      name: record.name,
+      email: record.email,
+      isEnabled: record.isEnabled,
+    })
+    setEditVisible(true)
+  }
 
-  // const handleEditOk = async (form: any) => {
-  //   form
-  //     .validateFields()
-  //     .then(async (values: any) => {
-  //       // console.log('[values]-18', values)
-  //       // console.log('[editId]-18', editId)
-  //       values.isEnabled = +values.isEnabled
-  //       const err = await updateBank(editId as number, values)
-  //       if (!err) {
-  //         messageApi.success('修改成功')
-  //         setEditVisible(false)
-  //       } else {
-  //         console.log('err', err)
-  //         if (err.code === 1062) {
-  //           messageApi.error('题库名称已存在')
-  //         } else {
-  //           messageApi.error(err.message)
-  //         }
-  //       }
-  //     })
-  //     .catch((err: any) => console.log('err', err))
-  // }
+  const handleEditOk = async (form: any) => {
+    form
+      .validateFields()
+      .then(async (values: any) => {
+        console.log('[values]-18', values)
+        console.log('[editId]-18', editId)
+        values.isEnabled = +values.isEnabled
+        const err = await updateUserNRoles(editId as number, values)
+        if (!err) {
+          messageApi.success('修改成功')
+          setEditVisible(false)
+        } else {
+          console.log('err', err)
+          messageApi.error(err.message)
+        }
+      })
+      .catch((err: any) => console.log('err', err))
+  }
 
   const [resetModalVisible, setResetModalVisible] = useState<boolean>(false)
   const onResetPasswordClick = (record: UserList) => () => {
@@ -207,14 +215,15 @@ export default function ListTable({
         onOk={handleResetPasswordOk}
         onCancel={() => setResetModalVisible(false)}
       ></Modal>
-      {/* TODO */}
-      {/* <BankEditModal
+      <UserEditModal
         title="编辑"
+        userId={editId}
+        allRoles={allRoles}
         initialValues={editInitialValues}
         visible={editVisible}
         handleOk={handleEditOk}
         handleCancel={() => setEditVisible(false)}
-      /> */}
+      />
     </>
   )
 }

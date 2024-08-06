@@ -189,7 +189,7 @@ export default function ListTable({
         }}
       />
       <QuestionEditModal
-        title="新建"
+        title="编辑"
         initialValues={initialValues}
         visible={editVisable}
         handleOk={handleEditOk}

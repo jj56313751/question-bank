@@ -62,3 +62,13 @@ export const fileTypeMap = <Record<string, string>>{
 }
 
 export const intPassword = '123456788'
+
+export const permissionTypesMap = <Record<string, string>>{
+  1: '菜单',
+  2: '按钮',
+}
+
+export const whetherMap = <Record<string, string>>{
+  0: '否',
+  1: '是',
+}

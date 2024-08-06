@@ -1,3 +1,6 @@
+import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
+import type { TreeDataNode } from 'antd'
+
 export const toCamelCase = (row: Record<string, any>) => {
   const newRow: Record<string, any> = {}
   for (const key in row) {
@@ -43,4 +46,55 @@ export function objectHavingKeys(
     itemKeys.length === keys.length &&
     itemKeys.every((key) => keys.includes(key))
   )
+}
+
+export function getAllPathsFromPermissions(permissions: any[], root: string) {
+  const result: string[] = []
+
+  function traverse(routes: any[], basePath: string) {
+    for (let route of routes) {
+      // only consider path
+      if (route.type !== 1 || !route.path) continue
+      const fullPath = basePath + '/' + route.path
+      if (route.children && route.children.length) {
+        traverse(route.children, fullPath)
+      } else {
+        result.push(fullPath)
+      }
+    }
+  }
+
+  traverse(permissions, root)
+
+  return result
+}
+
+export function buildNestedPermissions(
+  permissions: PermissionItem[],
+  parentId = null,
+): PermissionTrees[] {
+  return permissions
+    .filter((permission: any) => permission.parentId === parentId)
+    .map((permission: any) => ({
+      ...permission,
+      children: buildNestedPermissions(permissions, permission.id),
+    }))
+}
+
+export function nestedPermissionsToAntdTrees(
+  nestedPermissions: PermissionTrees[],
+): Array<TreeDataNode & PermissionTrees> {
+  return nestedPermissions.map((permission) => {
+    const node: TreeDataNode = {
+      key: permission.id,
+      title: permission.name,
+    }
+    if (permission.children && permission.children.length) {
+      permission.children = nestedPermissionsToAntdTrees(permission.children)
+    }
+    return {
+      ...permission,
+      ...node,
+    }
+  }) as Array<TreeDataNode & PermissionTrees>
 }

@@ -27,16 +27,12 @@ export default function BankEditModal({
     padding: '20px 10px',
   }
 
-  // useEffect(() => {
-  //   if (initialValues) {
-  //     // console.log('[initialValues]-35', initialValues)
-  //     form && form.setFieldsValue(initialValues) // reset int value
-  //   } else {
-  //     form && form.setFieldsValue({
-  //       isEnabled: 1,
-  //     })
-  //   }
-  // }, [initialValues, form])
+  useEffect(() => {
+    if (initialValues) {
+      // console.log('[initialValues]-35', initialValues)
+      form && form.setFieldsValue(initialValues) // reset int value
+    }
+  }, [initialValues, form])
 
   return (
     <Modal
@@ -51,11 +47,9 @@ export default function BankEditModal({
         {...layout}
         form={form}
         name={'bank-' + title}
-        initialValues={
-          initialValues || {
-            isEnabled: 1,
-          }
-        }
+        initialValues={{
+          isEnabled: 1,
+        }}
         style={formStyle}
       >
         <Form.Item

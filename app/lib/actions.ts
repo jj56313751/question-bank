@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { signIn, signOut } from '@/auth'
+import { signIn, signOut, auth } from '@/auth'
 import { AuthError } from 'next-auth'
 import { intPassword } from '@/app/lib/constant'
 import prisma from '@/app/lib/prisma'
@@ -21,7 +21,7 @@ const BankSchema = z.object({
     required_error: 'name is required',
     invalid_type_error: 'name must be a string',
   }),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   isEnabled: z
     .union([z.literal(0), z.literal(1)])
     .refine((val) => val === 0 || val === 1, {
@@ -63,7 +63,7 @@ const QuestionSchema = z.object({
     required_error: 'answer is required',
     invalid_type_error: 'answer must be a string',
   }),
-  analysis: z.string().optional(),
+  analysis: z.string().nullable().optional(),
   bankId: z.number({
     required_error: 'bankId is required',
     invalid_type_error: 'bankId must be a number',
@@ -105,9 +105,18 @@ const ImportQuestion = QuestionSchema.pick({
 
 const UserSchema = z.object({
   id: z.number(),
-  name: z.string(),
-  email: z.string(),
-  password: z.string(),
+  name: z.string({
+    required_error: 'name is required',
+    invalid_type_error: 'name must be a string',
+  }),
+  email: z.string({
+    required_error: 'email is required',
+    invalid_type_error: 'email must be a string',
+  }),
+  password: z.string({
+    required_error: 'password is required',
+    invalid_type_error: 'password must be a string',
+  }),
   isEnabled: z
     .union([z.literal(0), z.literal(1)])
     .refine((val) => val === 0 || val === 1, {
@@ -120,15 +129,68 @@ const CreateUser = UserSchema.omit({
   password: true,
 })
 
-const UpdateUser = UserSchema.omit({
-  id: true,
-  name: true,
-  email: true,
+const RoleSchema = z.object({
+  id: z.number(),
+  name: z.string({
+    required_error: 'name is required',
+    invalid_type_error: 'name must be a string',
+  }),
+  description: z.string({
+    required_error: 'description is required',
+    invalid_type_error: 'description must be a string',
+  }),
+  isEnabled: z
+    .union([z.literal(0), z.literal(1)])
+    .refine((val) => val === 0 || val === 1, {
+      message: 'isEnabled must be either 0 or 1',
+    }),
+})
+
+const UpdateUserNRoles = z.object({
+  isEnabled: UserSchema.shape.isEnabled,
+  roles: z.array(RoleSchema.pick({ id: true }).shape.id),
+})
+
+const CreateRole = RoleSchema.omit({ id: true })
+
+const UpdateRole = RoleSchema.omit({ id: true })
+
+const PermissionSchema = z.object({
+  id: z.number(),
+  parentId: z.number().nullable().optional(),
+  type: z.number(),
+  isMenu: z
+    .union([z.literal(0), z.literal(1)])
+    .refine((val) => val === 0 || val === 1, {
+      message: 'isEnabled must be either 0 or 1',
+    }),
+  name: z.string({
+    required_error: 'name is required',
+    invalid_type_error: 'name must be a string',
+  }),
+  permission: z.string({
+    required_error: 'permission is required',
+    invalid_type_error: 'permission must be a string',
+  }),
+  path: z.string().nullable().optional(),
+  icon: z.string().nullable().optional(),
+  sort: z.number().nullable().optional(),
+})
+
+const CreatePermission = PermissionSchema.omit({ id: true })
+
+const UpdatePermission = PermissionSchema.omit({ id: true })
+
+const RolePermissionsSchema = z.object({
+  id: z.number(),
+  roleId: z.number(),
+  permissionId: z.number(),
 })
 
 export async function createBank(formData: any) {
-  // TODO Add logged in userid
-  formData.createdBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.createdBy = session && ((session.user as any).id as number)
 
   const validatedFields = CreateBank.safeParse(formData)
   if (!validatedFields.success) {
@@ -158,8 +220,9 @@ export async function createBank(formData: any) {
 }
 
 export async function updateBank(id: number, formData: any) {
-  // TODO Add logged in userid
-  formData.updatedBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.updatedBy = session && ((session.user as any).id as number)
 
   const validatedFields = UpdateBank.safeParse(formData)
   if (!validatedFields.success) {
@@ -194,10 +257,12 @@ export async function updateBank(id: number, formData: any) {
 }
 
 export async function createQuestion(formData: any) {
-  // TODO Add logged in userid
-  formData.createdBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.createdBy = session && ((session.user as any).id as number)
 
   const validatedFields = CreateQuestion.safeParse(formData)
+  // console.log('[validatedFields]-207', validatedFields)
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -229,8 +294,9 @@ export async function createQuestion(formData: any) {
 }
 
 export async function updateQuestion(id: number, formData: any) {
-  // TODO Add logged in userid
-  formData.updatedBy = 1
+  const session = await auth()
+  // Add logged in userid
+  formData.updatedBy = session && ((session.user as any).id as number)
 
   const validatedFields = UpdateQuestion.safeParse(formData)
   if (!validatedFields.success) {
@@ -265,8 +331,9 @@ export async function updateQuestion(id: number, formData: any) {
 }
 
 export async function deleteQuestion(id: number, bankId: number) {
-  // TODO Add logged in userid
-  const deletedBy = 1
+  const session = await auth()
+  // Add logged in userid
+  const deletedBy = session && ((session.user as any).id as number)
 
   const validatedFields = DeleteQuestion.safeParse({
     id,
@@ -298,8 +365,9 @@ export async function deleteQuestion(id: number, bankId: number) {
 }
 
 export async function importQuestions(bankId: number, data: any[]) {
-  // TODO Add logged in userid
-  const createdBy = 1
+  const session = await auth()
+  // Add logged in userid
+  const createdBy: any = session && ((session.user as any).id as number)
   const upsertOperations: any[] = []
 
   data.forEach((question: any) => {
@@ -372,7 +440,6 @@ export async function signOutAction() {
   try {
     await signOut()
   } catch (error) {
-    console.log('[error]-339', error)
     if (error instanceof AuthError) {
       console.log('[error.type]-339', error.type)
     }
@@ -428,6 +495,212 @@ export async function resetUserPassowrd(id: number) {
       code: error.code || -1,
       message:
         error.message || 'Database Error: Failed to Reset User Password.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function createRole(formData: any) {
+  const validatedFields = CreateRole.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Role.',
+    }
+  }
+  const { name, description, isEnabled } = validatedFields.data
+
+  try {
+    await prisma.roles.create({
+      data: {
+        name,
+        description,
+        isEnabled,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Create Role.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateRole(id: number, formData: any) {
+  const validatedFields = UpdateRole.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Role.',
+    }
+  }
+
+  const { name, description, isEnabled } = validatedFields.data
+
+  try {
+    await prisma.roles.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        isEnabled,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Update Role.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function createPermission(formData: any) {
+  const validatedFields = CreatePermission.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Permission.',
+    }
+  }
+  const { parentId, type, isMenu, name, permission, path, icon, sort } =
+    validatedFields.data
+
+  try {
+    await prisma.permissions.create({
+      data: {
+        parentId,
+        type,
+        isMenu,
+        name,
+        permission,
+        path,
+        icon,
+        sort,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Create Permission.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updatePermission(id: number, formData: any) {
+  const validatedFields = UpdatePermission.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Permission.',
+    }
+  }
+
+  const { parentId, type, isMenu, name, permission, path, icon, sort } =
+    validatedFields.data
+
+  try {
+    await prisma.permissions.update({
+      where: { id },
+      data: {
+        parentId,
+        type,
+        isMenu,
+        name,
+        permission,
+        path,
+        icon,
+        sort,
+      },
+    })
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message: error.message || 'Database Error: Failed to Update Permission.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateRolePermissions(
+  roleId: number,
+  permissionIds: number[],
+) {
+  const operations: any[] = [
+    prisma.rolePermissions.deleteMany({
+      where: {
+        roleId,
+      },
+    }),
+  ]
+  permissionIds.forEach((permissionId) => {
+    operations.push(
+      prisma.rolePermissions.create({
+        data: {
+          roleId,
+          permissionId,
+        },
+      }),
+    )
+  })
+
+  try {
+    const res = await prisma.$transaction(operations)
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message:
+        error.message || 'Database Error: Failed to Update Role Permissions.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateUserNRoles(id: number, formData: any) {
+  const validatedFields = UpdateUserNRoles.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update User and Roles.',
+    }
+  }
+
+  const { isEnabled, roles } = validatedFields.data
+
+  const operations: any[] = [
+    prisma.users.update({
+      where: { id },
+      data: {
+        isEnabled,
+      },
+    }),
+    prisma.userRoles.deleteMany({
+      where: {
+        userId: id,
+      },
+    }),
+  ]
+
+  roles.forEach((roleId) => {
+    operations.push(
+      prisma.userRoles.create({
+        data: {
+          userId: id,
+          roleId,
+        },
+      }),
+    )
+  })
+
+  try {
+    await prisma.$transaction(operations)
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message:
+        error.message || 'Database Error: Failed to Update User and Roles.',
     }
   }
   revalidateCurrentPath()

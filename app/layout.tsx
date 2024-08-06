@@ -1,6 +1,8 @@
 import '@/app/ui/global.css'
 import { AntdRegistry } from '@ant-design/nextjs-registry'
-import { Metadata } from 'next';
+import { Metadata } from 'next'
+// import { auth } from '@/auth'
+// import { SessionProvider } from 'next-auth/react'
 
 export const metadata: Metadata = {
   title: {
@@ -9,17 +11,24 @@ export const metadata: Metadata = {
   },
   // description: 'The official Next.js Course Dashboard, built with App Router.',
   // metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
-};
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // const session = await auth()
+
   return (
     <html lang="en">
       <body>
+        {/* 待官方修复，SessionProvider中signIn需要手动刷新才能获取session 
+            https://github.com/nextauthjs/next-auth/issues/9504 
+        */}
+        {/* <SessionProvider session={session}> */}
         <AntdRegistry>{children}</AntdRegistry>
+        {/* </SessionProvider> */}
       </body>
     </html>
   )
