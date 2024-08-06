@@ -34,7 +34,7 @@ CREATE TABLE `Banks` (
 -- CreateTable
 CREATE TABLE `Questions` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `type` INTEGER NULL,
+    `type` SMALLINT NULL,
     `title` TEXT NOT NULL,
     `options` TEXT NULL,
     `answer` TEXT NULL,
@@ -55,13 +55,58 @@ CREATE TABLE `Questions` (
 CREATE TABLE `Roles` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
-    `description` VARCHAR(255) NULL,
+    `description` VARCHAR(255) NOT NULL,
     `is_enabled` TINYINT NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,
     `deleted_at` DATETIME(3) NULL,
 
     UNIQUE INDEX `unique_role_name`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Permissions` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `parent_id` INTEGER NULL,
+    `type` SMALLINT NOT NULL,
+    `is_menu` TINYINT NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `permission` VARCHAR(255) NOT NULL,
+    `path` VARCHAR(255) NULL,
+    `icon` VARCHAR(255) NULL,
+    `sort` SMALLINT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NULL,
+    `deleted_at` DATETIME(3) NULL,
+
+    UNIQUE INDEX `unique_permission`(`permission`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `user_roles` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER NOT NULL,
+    `role_id` INTEGER NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NULL,
+    `deleted_at` DATETIME(3) NULL,
+
+    UNIQUE INDEX `user_roles_user_id_role_id_key`(`user_id`, `role_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `role_permissions` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `role_id` INTEGER NOT NULL,
+    `permission_id` INTEGER NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NULL,
+    `deleted_at` DATETIME(3) NULL,
+
+    UNIQUE INDEX `role_permissions_role_id_permission_id_key`(`role_id`, `permission_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -85,3 +130,15 @@ ALTER TABLE `Questions` ADD CONSTRAINT `Questions_updated_by_fkey` FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE `Questions` ADD CONSTRAINT `Questions_deleted_by_fkey` FOREIGN KEY (`deleted_by`) REFERENCES `Users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_roles` ADD CONSTRAINT `user_roles_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_roles` ADD CONSTRAINT `user_roles_role_id_fkey` FOREIGN KEY (`role_id`) REFERENCES `Roles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `role_permissions` ADD CONSTRAINT `role_permissions_role_id_fkey` FOREIGN KEY (`role_id`) REFERENCES `Roles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `role_permissions` ADD CONSTRAINT `role_permissions_permission_id_fkey` FOREIGN KEY (`permission_id`) REFERENCES `Permissions`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

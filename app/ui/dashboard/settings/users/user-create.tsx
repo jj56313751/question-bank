@@ -22,7 +22,7 @@ export default function UserCreate() {
           setVisible(false)
           form.resetFields()
         } else {
-          if (err.code === 1062) {
+          if (err.code === 'P2002') {
             messageApi.error('邮箱或账号名称已存在')
           } else {
             messageApi.error(err.message)

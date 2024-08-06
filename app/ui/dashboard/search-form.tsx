@@ -10,10 +10,12 @@ export default function SearchForm({
   items,
   children,
   btns,
+  hasPagination = true,
 }: {
   items: SearchFormItem[]
   children?: React.ReactNode
   btns?: any
+  hasPagination?: boolean
 }) {
   const searchParams = useSearchParams()
   // console.log('[searchParams]-15', searchParams)
@@ -63,7 +65,7 @@ export default function SearchForm({
           } else {
             params.set(key, values[key])
           }
-          params.set('pageNumber', '1')
+          hasPagination && params.set('pageNumber', '1')
         }
         replace(`${pathname}?${params.toString()}`)
       })

@@ -31,7 +31,7 @@ export default async function Page({
     pageSize: searchParams?.pageSize || 10,
   })
   const dataSource = questions.list as QuestionList[]
-  console.log('[dataSource]-34', dataSource)
+  // console.log('[dataSource]-34', dataSource)
   const total = questions.total
   const banks: any = await fetchBanks({
     id: searchParams?.bankId,

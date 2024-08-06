@@ -1,10 +1,11 @@
 import { Metadata } from 'next'
 // import DashboardContent from '@/app/ui/dashboard/dashboad-content'
-import SideNav from '@/app/ui/dashboard/side-nav'
+import SideNav from '@/app/ui/dashboard/layout/side-nav'
 import { Layout as AntLayout, Flex } from 'antd'
 import { Content } from 'antd/lib/layout/layout'
 import Sider from 'antd/lib/layout/Sider'
 import Image from 'next/image'
+import { auth } from '@/auth'
 
 export const metadata: Metadata = {
   title: {
@@ -13,7 +14,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const session = await auth()
+
   return (
     <AntLayout className="ant-layout-has-sider" style={{ height: '100vh' }}>
       <Sider
@@ -44,7 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Image src="/logo.png" width={32} height={32} alt="Question Bank" />
             <p className="ml-1 flex-1 text-lg text-white">Question Bank</p>
           </Flex>
-          <SideNav />
+          <SideNav session={session} />
         </div>
       </Sider>
       <div

@@ -160,7 +160,7 @@ export default function ListTable({
           messageApi.success('修改成功')
           setEditVisible(false)
         } else {
-          if (err.code === 1062) {
+          if (err.code === 'P2002') {
             messageApi.error('题库名称已存在')
           } else {
             messageApi.error(err.message)
