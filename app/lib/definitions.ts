@@ -49,3 +49,9 @@ export type PermissionItem = Omit<
 export interface PermissionTrees extends PermissionItem {
   children?: PermissionTrees[]
 }
+
+export interface ApiResponse<T> {
+  code: number
+  result?: T
+  message?: string
+}

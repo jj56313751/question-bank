@@ -129,12 +129,6 @@ const CreateUser = UserSchema.omit({
   password: true,
 })
 
-const UpdateUser = UserSchema.omit({
-  id: true,
-  name: true,
-  email: true,
-})
-
 const RoleSchema = z.object({
   id: z.number(),
   name: z.string({
@@ -150,6 +144,11 @@ const RoleSchema = z.object({
     .refine((val) => val === 0 || val === 1, {
       message: 'isEnabled must be either 0 or 1',
     }),
+})
+
+const UpdateUserNRoles = z.object({
+  isEnabled: UserSchema.shape.isEnabled,
+  roles: z.array(RoleSchema.pick({ id: true }).shape.id),
 })
 
 const CreateRole = RoleSchema.omit({ id: true })
@@ -654,6 +653,54 @@ export async function updateRolePermissions(
       code: error.code || -1,
       message:
         error.message || 'Database Error: Failed to Update Role Permissions.',
+    }
+  }
+  revalidateCurrentPath()
+}
+
+export async function updateUserNRoles(id: number, formData: any) {
+  const validatedFields = UpdateUserNRoles.safeParse(formData)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update User and Roles.',
+    }
+  }
+
+  const { isEnabled, roles } = validatedFields.data
+
+  const operations: any[] = [
+    prisma.users.update({
+      where: { id },
+      data: {
+        isEnabled,
+      },
+    }),
+    prisma.userRoles.deleteMany({
+      where: {
+        userId: id,
+      },
+    }),
+  ]
+
+  roles.forEach((roleId) => {
+    operations.push(
+      prisma.userRoles.create({
+        data: {
+          userId: id,
+          roleId,
+        },
+      }),
+    )
+  })
+
+  try {
+    await prisma.$transaction(operations)
+  } catch (error: any) {
+    return {
+      code: error.code || -1,
+      message:
+        error.message || 'Database Error: Failed to Update User and Roles.',
     }
   }
   revalidateCurrentPath()

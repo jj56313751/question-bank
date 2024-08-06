@@ -21,6 +21,7 @@ export const authConfig = {
       const isApi = nextUrl.pathname.startsWith('/api')
       if (isApi) {
         const apiAuthRes = apiAuthMiddleware(params)
+        console.log('[apiAuthRes]-24', apiAuthRes)
         if (apiAuthRes) return apiAuthRes
       }
       if (isOnDashboard) {

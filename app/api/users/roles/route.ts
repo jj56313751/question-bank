@@ -1,11 +1,17 @@
 import prisma from '@/app/lib/prisma'
+import { createResponse } from '@/app/lib/response'
+import type { ApiResponse } from '@/app/lib/definitions'
+import codes from '@/app/lib/codes'
+import messages from '@/app/lib/messages'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const userId = searchParams.get('userId')
+  // console.log('[userId]-6', userId)
 
   if (!userId) {
-    return new Response('userId is required', { status: 400 })
+    const error = createResponse(codes.BAD_REQUEST, 'userId is required')
+    return new Response(JSON.stringify(error), { status: 400 })
   }
 
   try {
@@ -25,7 +31,13 @@ export async function GET(request: Request) {
     })
     const userRoles = userRolesRes.map((userRole) => userRole.Roles)
 
-    return new Response(JSON.stringify(userRoles), {
+    const successRes: ApiResponse<typeof userRoles> = createResponse(
+      codes.OK,
+      messages.SUCCESS,
+      userRoles,
+    )
+
+    return new Response(JSON.stringify(successRes), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
