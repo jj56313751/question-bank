@@ -13,7 +13,7 @@ export default function UserEditModal({
   initialValues,
 }: {
   title: string
-  allRoles: any[]
+  allRoles?: any[]
   visible: boolean
   handleOk: any
   handleCancel: any
@@ -95,17 +95,19 @@ export default function UserEditModal({
         >
           <Input disabled={title === '编辑'} />
         </Form.Item>
-        <Form.Item
-          name="roles"
-          label="角色"
-          rules={[{ required: true, message: '角色必填' }]}
-        >
-          <Select
-            mode="multiple"
-            optionFilterProp="label"
-            options={rolesOptions}
-          />
-        </Form.Item>
+        {allRoles && allRoles.length > 0 && (
+          <Form.Item
+            name="roles"
+            label="角色"
+            rules={[{ required: true, message: '角色必填' }]}
+          >
+            <Select
+              mode="multiple"
+              optionFilterProp="label"
+              options={rolesOptions}
+            />
+          </Form.Item>
+        )}
         <Form.Item name="isEnabled" label="状态">
           <Switch checkedChildren="启用" unCheckedChildren="禁用" />
         </Form.Item>
