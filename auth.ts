@@ -10,6 +10,7 @@ export const {
   signIn,
   signOut,
   auth,
+  unstable_update,
 } = NextAuth({
   // debug: true,
   ...authConfig,

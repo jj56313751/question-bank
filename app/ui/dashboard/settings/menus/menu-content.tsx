@@ -117,7 +117,7 @@ export default function Content({
         showLine
       />
       <MenuEditModal
-        title="编辑"
+        title={modalType === 'create' ? '新增' : '编辑'}
         visible={visible}
         initialValues={modalData}
         handleOk={handleEditOk}

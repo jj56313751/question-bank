@@ -7,8 +7,9 @@ import {
   fetchRoleNestedPermissions,
   fetchAllNestedPermissions,
   fetchRolePermissions,
+  fetchAllPermissions,
 } from '@/app/lib/data'
-import type { PermissionTrees } from '@/app/lib/definitions'
+import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
 import PermissionContent from '@/app/ui/dashboard/settings/permissions/permission-content'
 
 export const metadata: Metadata = {
@@ -34,9 +35,16 @@ export default async function Page({
       })
     }
   })
-  let roleNestedPermissions: PermissionTrees[] = []
+  // let roleNestedPermissions: PermissionTrees[] = []
+  // if (searchParams?.roleId) {
+  //   roleNestedPermissions = await fetchRoleNestedPermissions({
+  //     roleId: +searchParams.roleId,
+  //   })
+  //   // console.log('roleNestedPermissions', roleNestedPermissions)
+  // }
+  let rolePermissions: PermissionItem[] = []
   if (searchParams?.roleId) {
-    roleNestedPermissions = await fetchRoleNestedPermissions({
+    rolePermissions = await fetchRolePermissions({
       roleId: +searchParams.roleId,
     })
     // console.log('roleNestedPermissions', roleNestedPermissions)
@@ -47,10 +55,11 @@ export default async function Page({
   return (
     <>
       <SearchForm items={searchItems} hasPagination={false} />
-      {roleNestedPermissions.length && searchParams && searchParams.roleId ? (
+      {rolePermissions.length && searchParams && searchParams.roleId ? (
         <PermissionContent
           roleId={+searchParams.roleId}
-          roleNestedPermissions={roleNestedPermissions}
+          rolePermissions={rolePermissions}
+          // roleNestedPermissions={roleNestedPermissions}
           allNestedPermissions={allNestedPermissions}
         />
       ) : (

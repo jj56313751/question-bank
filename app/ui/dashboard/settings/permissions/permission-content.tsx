@@ -1,48 +1,82 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Tree, Button, Flex, message, Divider, Modal } from 'antd'
 import { ExclamationCircleFilled } from '@ant-design/icons'
 import type { TreeDataNode, TreeProps } from 'antd'
 import { updateRolePermissions } from '@/app/lib/actions'
 import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
 
+interface CheckStrictly {
+  checked: React.Key[]
+  halfChecked: React.Key[]
+}
+
 export default function Content({
   roleId,
-  roleNestedPermissions,
+  // roleNestedPermissions,
   allNestedPermissions,
+  rolePermissions,
 }: {
   roleId: number
-  roleNestedPermissions: PermissionTrees[]
+  // roleNestedPermissions: PermissionTrees[]
   allNestedPermissions: PermissionTrees[]
+  rolePermissions: PermissionItem[]
 }) {
+  // const { update: sessionUpdate } = useSession()
   const [messageApi, contextHolder] = message.useMessage()
-  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([])
+  // const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([])
+  const [checkedKeys, setCheckedKeys] = useState<CheckStrictly>({
+    checked: [],
+    halfChecked: [],
+  })
   // console.log('[checkedKeys]-17', checkedKeys)
+  // console.log('[roleNestedPermissions]-17', roleNestedPermissions)
+  const defaultExpandedKeys = useMemo(() => {
+    let keys: React.Key[] = []
+    // expand second level
+    allNestedPermissions.forEach((item) => {
+      keys.push(item.id)
+      // expand third level
+      // if (item.children && item.children.length) {
+      //   item.children.forEach((child) => {
+      //     keys.push(child.id)
+      //   })
+      // }
+    })
+    return keys
+  }, [allNestedPermissions])
 
   useEffect(() => {
-    let defaultCheckedKeys: React.Key[] = []
-    const getCheckedKeys = (treeData: PermissionTrees[]) => {
-      treeData.forEach((item) => {
-        if (item.children && item.children.length) {
-          getCheckedKeys(item.children)
-          const allChildrenChecked = item.children.every((child) =>
-            defaultCheckedKeys.includes(child.id),
-          )
-          if (allChildrenChecked) {
-            defaultCheckedKeys.push(item.id)
-          }
-        } else {
-          defaultCheckedKeys.push(item.id)
-        }
-      })
-      return defaultCheckedKeys
-    }
-    setCheckedKeys(getCheckedKeys(roleNestedPermissions))
-  }, [roleNestedPermissions])
+    /*  */
+    // let defaultCheckedKeys: React.Key[] = []
+    // const getCheckedKeys = (treeData: PermissionTrees[]) => {
+    //   treeData.forEach((item) => {
+    //     if (item.children && item.children.length) {
+    //       getCheckedKeys(item.children)
+    //       const allChildrenChecked = item.children.every((child) =>
+    //         defaultCheckedKeys.includes(child.id),
+    //       )
+    //       if (allChildrenChecked) {
+    //         defaultCheckedKeys.push(item.id)
+    //       }
+    //     } else {
+    //       defaultCheckedKeys.push(item.id)
+    //     }
+    //   })
+    //   return defaultCheckedKeys
+    // }
+    /* checkStrictly */
+    let defaultCheckedKeys: CheckStrictly = { checked: [], halfChecked: [] }
+    // TODO halfChecked
+    rolePermissions.forEach((item) => {
+      defaultCheckedKeys.checked.push(item.id)
+    })
+    setCheckedKeys(defaultCheckedKeys)
+  }, [rolePermissions])
 
   const onCheck: TreeProps['onCheck'] = (checkedKeysValue) => {
     // console.log('onCheck', checkedKeysValue)
-    setCheckedKeys(checkedKeysValue as React.Key[])
+    setCheckedKeys(checkedKeysValue as CheckStrictly)
   }
 
   const { confirm } = Modal
@@ -54,7 +88,9 @@ export default function Content({
       okText: '确定',
       cancelText: '取消',
       async onOk() {
-        const err = await updateRolePermissions(roleId, checkedKeys as number[])
+        // console.log('checkedKeys', checkedKeys)
+        const { checked } = checkedKeys
+        const err = await updateRolePermissions(roleId, checked as number[])
         if (err) {
           messageApi.error(err.message)
         } else {
@@ -76,6 +112,8 @@ export default function Content({
           key: 'id',
           children: 'children',
         }}
+        checkStrictly
+        defaultExpandedKeys={defaultExpandedKeys}
         checkedKeys={checkedKeys}
         onCheck={onCheck}
         treeData={allNestedPermissions as any}

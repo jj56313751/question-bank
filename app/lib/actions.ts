@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { signIn, signOut, auth } from '@/auth'
+import { signIn, signOut, auth, unstable_update } from '@/auth'
 import { AuthError } from 'next-auth'
 import { intPassword } from '@/app/lib/constant'
 import prisma from '@/app/lib/prisma'
@@ -609,7 +609,7 @@ export async function updatePermission(id: number, formData: any) {
         type,
         isMenu,
         name,
-        permission,
+        // permission, // can't update permission
         path,
         icon,
         sort,
@@ -647,7 +647,7 @@ export async function updateRolePermissions(
   })
 
   try {
-    const res = await prisma.$transaction(operations)
+    await prisma.$transaction(operations)
   } catch (error: any) {
     return {
       code: error.code || -1,

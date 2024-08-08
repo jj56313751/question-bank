@@ -56,8 +56,11 @@ export function getAllPathsFromPermissions(permissions: any[], root: string) {
       // only consider path
       if (route.type !== 1 || !route.path) continue
       const fullPath = basePath + '/' + route.path
-      if (route.children && route.children.length) {
-        traverse(route.children, fullPath)
+      const filteredChildren =
+        route.children &&
+        route.children.filter((child: any) => child.type === 1)
+      if (filteredChildren && filteredChildren.length) {
+        traverse(filteredChildren, fullPath)
       } else {
         result.push(fullPath)
       }

@@ -1,7 +1,7 @@
 import type { Page } from './types'
 import { Prisma } from '@prisma/client'
 import prisma from '@/app/lib/prisma'
-import type { PermissionItem } from '@/app/lib/definitions'
+import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
 import {
   getAllPathsFromPermissions,
   buildNestedPermissions,
@@ -313,14 +313,16 @@ export async function fetchUserRolesPermissions({ id }: { id: number }) {
       permissionNames.push(permission.permission)
     }
 
-    const permissions: any[] = buildNestedPermissions([
+    const permissions: PermissionTrees[] = buildNestedPermissions([
       ...permissionsMap.values(),
     ])
+    // console.log('permissions', permissions)
 
     const permissionPaths: string[] = ([] = getAllPathsFromPermissions(
       permissions,
       '/dashboard',
     )) // set root path /dashboard
+    // console.log('permissionPaths', permissionPaths)
 
     return {
       roles,
@@ -427,11 +429,11 @@ export async function fetchRolePermissions({ roleId }: { roleId: number }) {
     return permissions
   } catch (error) {
     console.error('Database Error:', error)
-    throw new Error('Failed to fetch RoleNestedPermissions.')
+    throw new Error('Failed to fetch RolePermissions.')
   }
 }
 
-export async function fetchPermissions() {
+export async function fetchAllPermissions() {
   try {
     const permissions = await prisma.permissions.findMany({
       select: {
