@@ -1,11 +1,33 @@
 import { NextResponse } from 'next/server'
+import { createResponse } from '@/app/lib/response'
+import { checkRoutePermission } from '@/app/lib/checkPermission'
+import codes from '@/app/lib/codes'
+import messages from '@/app/lib/messages'
 
-export default function authMiddleware({ auth }: { auth: any }) {
+export default function apiAuthMiddleware(params: any) {
+  const {
+    auth,
+    request: { nextUrl },
+  } = params
+
   if (!auth?.user) {
-    return new NextResponse(
-      JSON.stringify({ status: 'fail', message: 'You are not logged in' }),
-      { status: 401 },
+    const unauthorizedRes = createResponse(
+      codes.UNAUTHORIZED,
+      messages.UNAUTHORIZED,
     )
+    return new NextResponse(JSON.stringify(unauthorizedRes), { status: 401 })
+  }
+
+  if (auth.user.permissionNames) {
+    const hasPermission = checkRoutePermission(
+      nextUrl.pathname,
+      auth.user.permissionNames,
+    )
+    // console.log('[hasPermission]-22', hasPermission)
+    if (!hasPermission) {
+      const forbiddenRes = createResponse(codes.FORBIDDEN, messages.FORBIDDEN)
+      return new NextResponse(JSON.stringify(forbiddenRes), { status: 403 })
+    }
   }
 
   const resp = NextResponse.next()

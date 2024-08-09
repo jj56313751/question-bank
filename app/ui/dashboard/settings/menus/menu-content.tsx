@@ -6,6 +6,7 @@ import MenuEditModal from './menu-edit-modal'
 import { createPermission, updatePermission } from '@/app/lib/actions'
 // import { nestedPermissionsToAntdTrees } from '@/app/lib/utils'
 import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
+import useHasPermission from '@/app/hooks/useHasPermission'
 
 export default function Content({
   nestedPermissions,
@@ -19,24 +20,31 @@ export default function Content({
 
   const [messageApi, contextHolder] = message.useMessage()
 
+  const canCreate = useHasPermission('dashboard_settings_menus_create-sub')
+  const canEdit = useHasPermission('dashboard_settings_menus_edit')
+
   const renderTitle = (node: any) => {
     return (
       <Flex className="flex-1" align="center">
         <span className="flex-1">{node?.name}</span>
-        <Button
-          type="link"
-          size="small"
-          onClick={() => openModal(node, 'create')}
-        >
-          新增
-        </Button>
-        <Button
-          type="link"
-          size="small"
-          onClick={() => openModal(node, 'edit')}
-        >
-          编辑
-        </Button>
+        {canCreate && (
+          <Button
+            type="link"
+            size="small"
+            onClick={() => openModal(node, 'create')}
+          >
+            新增
+          </Button>
+        )}
+        {canEdit && (
+          <Button
+            type="link"
+            size="small"
+            onClick={() => openModal(node, 'edit')}
+          >
+            编辑
+          </Button>
+        )}
       </Flex>
     )
   }
@@ -116,13 +124,15 @@ export default function Content({
         blockNode
         showLine
       />
-      <MenuEditModal
-        title="编辑"
-        visible={visible}
-        initialValues={modalData}
-        handleOk={handleEditOk}
-        handleCancel={() => setVisible(false)}
-      />
+      {(canCreate || canEdit) && (
+        <MenuEditModal
+          title={modalType === 'create' ? '新增' : '编辑'}
+          visible={visible}
+          initialValues={modalData}
+          handleOk={handleEditOk}
+          handleCancel={() => setVisible(false)}
+        />
+      )}
     </div>
   )
 }

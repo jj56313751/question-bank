@@ -13,8 +13,13 @@ export default function routeAuthMiddleware({
   const permissionRoutes: string[] = [
     '/dashboard',
     '/dashboard/unauthorized',
-    ...permissionPaths,
   ]
+  
+  if (permissionPaths) {
+    permissionPaths.forEach((path: string) => {
+      permissionRoutes.push(path)
+    })
+  }
 
   if (!permissionRoutes.includes(nextUrl.pathname))
     return NextResponse.redirect(

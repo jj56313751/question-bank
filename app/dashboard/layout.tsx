@@ -5,7 +5,7 @@ import { Layout as AntLayout, Flex } from 'antd'
 import { Content } from 'antd/lib/layout/layout'
 import Sider from 'antd/lib/layout/Sider'
 import Image from 'next/image'
-import { auth } from '@/auth'
+// import { auth } from '@/auth'
 
 export const metadata: Metadata = {
   title: {
@@ -19,7 +19,7 @@ export default async function Layout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  // const session = await auth()
 
   return (
     <AntLayout className="ant-layout-has-sider" style={{ height: '100vh' }}>
@@ -51,7 +51,8 @@ export default async function Layout({
             <Image src="/logo.png" width={32} height={32} alt="Question Bank" />
             <p className="ml-1 flex-1 text-lg text-white">Question Bank</p>
           </Flex>
-          <SideNav session={session} />
+          {/* <SideNav session={session} /> */}
+          <SideNav />
         </div>
       </Sider>
       <div

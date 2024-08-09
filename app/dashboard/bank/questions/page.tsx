@@ -7,6 +7,8 @@ import { fetchQuestions, fetchBanks } from '@/app/lib/data'
 import { QuestionList } from '@/app/lib/types'
 import Title from '@/app/ui/dashboard/bank/questions-title'
 import QuestionCreate from '@/app/ui/dashboard/bank/question-create'
+import { auth } from '@/auth'
+import { hasFunctionalPermission } from '@/app/lib/checkPermission'
 
 export const metadata: Metadata = {
   title: '题目列表',
@@ -23,6 +25,13 @@ export default async function Page({
     pageSize?: number
   }
 }) {
+  const session: any = await auth()
+  // console.log('session', session)
+  const canCreate = hasFunctionalPermission(
+    session,
+    'dashboard_bank_questions_create',
+  )
+
   const questions: any = await fetchQuestions({
     bankId: searchParams?.bankId,
     title: searchParams?.title,
@@ -42,7 +51,7 @@ export default async function Page({
 
   return (
     <>
-      <SearchForm items={searchItems} btns={btns}>
+      <SearchForm items={searchItems} btns={canCreate && btns}>
         <Title text={bankInfo?.name} />
       </SearchForm>
       <QuestionsTable dataSource={dataSource} total={total} />

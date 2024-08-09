@@ -1,8 +1,8 @@
 import '@/app/ui/global.css'
 import { AntdRegistry } from '@ant-design/nextjs-registry'
 import { Metadata } from 'next'
-// import { auth } from '@/auth'
-// import { SessionProvider } from 'next-auth/react'
+import { auth } from '@/auth'
+import { SessionProvider } from 'next-auth/react'
 
 export const metadata: Metadata = {
   title: {
@@ -18,7 +18,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // const session = await auth()
+  const session = await auth()
 
   return (
     <html lang="en">
@@ -26,9 +26,9 @@ export default async function RootLayout({
         {/* 待官方修复，SessionProvider中signIn需要手动刷新才能获取session 
             https://github.com/nextauthjs/next-auth/issues/9504 
         */}
-        {/* <SessionProvider session={session}> */}
-        <AntdRegistry>{children}</AntdRegistry>
-        {/* </SessionProvider> */}
+        <SessionProvider session={session}>
+          <AntdRegistry>{children}</AntdRegistry>
+        </SessionProvider>
       </body>
     </html>
   )

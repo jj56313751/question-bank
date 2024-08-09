@@ -6,6 +6,8 @@ import ListTable from '@/app/ui/dashboard/settings/users/list-table'
 import { fetchUsers } from '@/app/lib/data'
 import { UserList } from '@/app/lib/types'
 import UserCreate from '@/app/ui/dashboard/settings/users/user-create'
+import { auth } from '@/auth'
+import { hasFunctionalPermission } from '@/app/lib/checkPermission'
 
 export const metadata: Metadata = {
   title: '用户管理',
@@ -22,6 +24,12 @@ export default async function Page({
     pageSize?: number
   }
 }) {
+  const session: any = await auth()
+  // console.log('session', session)
+  const canCreate = hasFunctionalPermission(
+    session,
+    'dashboard_settings_users_create',
+  )
   // console.log('[searchParams]-29', searchParams)
   // 获取数据
   const users: any = await fetchUsers({
@@ -37,7 +45,7 @@ export default async function Page({
 
   return (
     <>
-      <SearchForm items={searchItems} btns={<UserCreate />} />
+      <SearchForm items={searchItems} btns={canCreate && <UserCreate />} />
       <ListTable dataSource={dataSource} total={total} />
     </>
   )

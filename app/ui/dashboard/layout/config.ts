@@ -1,5 +1,6 @@
 import React from 'react'
 import * as icons from '@ant-design/icons'
+import type { PermissionItem, PermissionTrees } from '@/app/lib/definitions'
 
 type IconType = React.ComponentType<{ className?: string }>
 
@@ -22,13 +23,16 @@ function getIconComponent(iconName: string): IconType | null {
   return iconsMap[iconName] || null
 }
 
-export const generateSideNavs = (permissions: any[]): any[] => {
-  let navs: any[] = []
+export const generateSideNavs = (
+  permissions: PermissionItem[],
+): PermissionTrees[] | void => {
+  let navs: PermissionTrees[] = []
   const data = JSON.parse(JSON.stringify(permissions))
   data.sort((a: any, b: any) => a.sort - b.sort)
-  data
-    .filter((item: any) => item.isMenu) // only show menu items
-    .forEach((item: any) => {
+  const filteredData = data.filter((item: any) => item.isMenu)
+  if (filteredData.length) {
+    // only show menu items
+    filteredData.forEach((item: any) => {
       const navItem: any = {
         key: item.path,
         label: item.name,
@@ -41,6 +45,6 @@ export const generateSideNavs = (permissions: any[]): any[] => {
       }
       navs.push(navItem)
     })
-
-  return navs
+    return navs
+  }
 }
