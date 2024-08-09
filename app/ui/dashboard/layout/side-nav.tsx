@@ -59,7 +59,7 @@ export default function SideNav() {
 
   useEffect(() => {
     if (userInfo && !hasUpdatedSession.current) {
-      console.log('[userInfo]-59', userInfo)
+      // console.log('[userInfo]-59', userInfo)
       const update = async () => {
         await sessionUpdate(userInfo)
         hasUpdatedSession.current = true

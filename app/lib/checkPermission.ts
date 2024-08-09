@@ -24,3 +24,16 @@ export function checkRoutePermission(route: string, userPermissions: string[]) {
     userPermissions.includes(permission),
   )
 }
+
+export function hasFunctionalPermission(
+  session: any,
+  permission: string | string[],
+) {
+  if (!session) return false
+  const userPermissions = session.user.permissionNames
+  if (Array.isArray(permission)) {
+    return permission.some((p) => userPermissions.includes(p))
+  } else {
+    return userPermissions.includes(permission)
+  }
+}

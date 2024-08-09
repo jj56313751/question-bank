@@ -6,6 +6,8 @@ import ListTable from '@/app/ui/dashboard/bank/list-table'
 import { fetchBanks } from '@/app/lib/data'
 import { BankList } from '@/app/lib/types'
 import BankCreate from '@/app/ui/dashboard/bank/bank-create'
+import { auth } from '@/auth'
+import { hasFunctionalPermission } from '@/app/lib/checkPermission'
 
 export const metadata: Metadata = {
   title: '题库列表',
@@ -21,6 +23,13 @@ export default async function Page({
     pageSize?: number
   }
 }) {
+  const session: any = await auth()
+  // console.log('session', session)
+  const canCreate = hasFunctionalPermission(
+    session,
+    'dashboard_bank_list_create',
+  )
+  // console.log('[canCreate]-29', canCreate)
   // console.log('[searchParams]-29', searchParams)
   // 获取数据
   const banks: any = await fetchBanks({
@@ -35,7 +44,7 @@ export default async function Page({
 
   return (
     <>
-      <SearchForm items={searchItems} btns={<BankCreate />} />
+      <SearchForm items={searchItems} btns={canCreate && <BankCreate />} />
       <ListTable dataSource={dataSource} total={total} />
     </>
   )
