@@ -7,6 +7,7 @@ import { questionTypesMap } from '@/app/lib/constant'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import QuestionEditModal from './question-edit-modal'
 import { updateQuestion, deleteQuestion } from '@/app/lib/actions'
+import useHasPermission from '@/app/hooks/useHasPermission'
 
 export default function ListTable({
   dataSource,
@@ -20,6 +21,9 @@ export default function ListTable({
   const { replace } = useRouter()
 
   const [messageApi, contextHolder] = message.useMessage()
+
+  const canEdit = useHasPermission('dashboard_bank_questions_edit')
+  const canDelete = useHasPermission('dashboard_bank_questions_delete')
 
   const onPaginationChange = (page: number, pageSize: number) => {
     const params = new URLSearchParams(searchParams)
@@ -86,12 +90,16 @@ export default function ListTable({
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
-          <Button type="link" onClick={onEditClick(record)}>
-            编辑
-          </Button>
-          <Button type="link" onClick={onDeleteClick(record)}>
-            删除
-          </Button>
+          {canEdit && (
+            <Button type="link" onClick={onEditClick(record)}>
+              编辑
+            </Button>
+          )}
+          {canDelete && (
+            <Button type="link" onClick={onDeleteClick(record)}>
+              删除
+            </Button>
+          )}
         </Space>
       ),
     },
@@ -188,13 +196,15 @@ export default function ListTable({
           total: total,
         }}
       />
-      <QuestionEditModal
-        title="编辑"
-        initialValues={initialValues}
-        visible={editVisable}
-        handleOk={handleEditOk}
-        handleCancel={() => setEditVisible(false)}
-      />
+      {canEdit && (
+        <QuestionEditModal
+          title="编辑"
+          initialValues={initialValues}
+          visible={editVisable}
+          handleOk={handleEditOk}
+          handleCancel={() => setEditVisible(false)}
+        />
+      )}
     </>
   )
 }

@@ -77,8 +77,12 @@ export default function EditModal({
           name="permission"
           label="权限名"
           rules={[{ required: true, message: '权限名必填' }]}
+          extra={title === '编辑' ? '' : '新增后不能修改，请先确认'}
         >
-          <Input placeholder="例: dashboard_operate" />
+          <Input
+            placeholder="例: dashboard_operate"
+            disabled={title === '编辑'}
+          />
         </Form.Item>
         {typeValue === '1' && (
           <>

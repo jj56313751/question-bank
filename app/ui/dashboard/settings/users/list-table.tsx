@@ -8,6 +8,7 @@ import UserEditModal from './user-edit-modal'
 import { resetUserPassowrd, updateUserNRoles } from '@/app/lib/actions'
 import { isEnabledMap } from '@/app/lib/constant'
 import dayjs from 'dayjs'
+import useHasPermission from '@/app/hooks/useHasPermission'
 
 export default function ListTable({
   dataSource,
@@ -21,6 +22,9 @@ export default function ListTable({
   const { replace, push } = useRouter()
 
   const [messageApi, contextHolder] = message.useMessage()
+
+  const canEdit = useHasPermission('dashboard_settings_users_edit')
+  const canReset = useHasPermission('dashboard_settings_users_reset-password')
 
   const onPaginationChange = (page: number, pageSize: number) => {
     const params = new URLSearchParams(searchParams)
@@ -102,12 +106,16 @@ export default function ListTable({
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
-          <Button type="link" onClick={onEditClick(record)}>
-            编辑
-          </Button>
-          <Button type="link" onClick={onResetPasswordClick(record)}>
-            重置密码
-          </Button>
+          {canEdit && (
+            <Button type="link" onClick={onEditClick(record)}>
+              编辑
+            </Button>
+          )}
+          {canReset && (
+            <Button type="link" onClick={onResetPasswordClick(record)}>
+              重置密码
+            </Button>
+          )}
         </Space>
       ),
     },
@@ -207,23 +215,27 @@ export default function ListTable({
           total: total,
         }}
       />
-      <Modal
-        title="重置密码"
-        okText="确定"
-        cancelText="取消"
-        open={resetModalVisible}
-        onOk={handleResetPasswordOk}
-        onCancel={() => setResetModalVisible(false)}
-      ></Modal>
-      <UserEditModal
-        title="编辑"
-        userId={editId}
-        allRoles={allRoles}
-        initialValues={editInitialValues}
-        visible={editVisible}
-        handleOk={handleEditOk}
-        handleCancel={() => setEditVisible(false)}
-      />
+      {canReset && (
+        <Modal
+          title="重置密码"
+          okText="确定"
+          cancelText="取消"
+          open={resetModalVisible}
+          onOk={handleResetPasswordOk}
+          onCancel={() => setResetModalVisible(false)}
+        />
+      )}
+      {canEdit && (
+        <UserEditModal
+          title="编辑"
+          userId={editId}
+          allRoles={allRoles}
+          initialValues={editInitialValues}
+          visible={editVisible}
+          handleOk={handleEditOk}
+          handleCancel={() => setEditVisible(false)}
+        />
+      )}
     </>
   )
 }

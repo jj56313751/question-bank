@@ -10,6 +10,7 @@ import { updateBank, importQuestions } from '@/app/lib/actions'
 import { isEnabledMap } from '@/app/lib/constant'
 import dayjs from 'dayjs'
 import { objectHavingKeys } from '@/app/lib/utils'
+import useHasPermission from '@/app/hooks/useHasPermission'
 
 export default function ListTable({
   dataSource,
@@ -23,6 +24,9 @@ export default function ListTable({
   const { replace, push } = useRouter()
 
   const [messageApi, contextHolder] = message.useMessage()
+
+  const canEdit = useHasPermission('dashboard_bank_list_edit')
+  const canImport = useHasPermission('dashboard_bank_list_import')
 
   const onPaginationChange = (page: number, pageSize: number) => {
     const params = new URLSearchParams(searchParams)
@@ -41,7 +45,7 @@ export default function ListTable({
   }
 
   const onNameClick = (id: string) => () => {
-    console.log('[id]-44', id)
+    // console.log('[id]-44', id)
     push(`/dashboard/bank/questions?bankId=${id}`)
   }
 
@@ -121,12 +125,16 @@ export default function ListTable({
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
-          <Button type="link" onClick={onEditClick(record)}>
-            编辑
-          </Button>
-          <Button type="link" onClick={onImportClick(record)}>
-            导入
-          </Button>
+          {canEdit && (
+            <Button type="link" onClick={onEditClick(record)}>
+              编辑
+            </Button>
+          )}
+          {canImport && (
+            <Button type="link" onClick={onImportClick(record)}>
+              导入
+            </Button>
+          )}
         </Space>
       ),
     },
@@ -250,18 +258,22 @@ export default function ListTable({
           total: total,
         }}
       />
-      <BankEditModal
-        title="编辑"
-        initialValues={editInitialValues}
-        visible={editVisible}
-        handleOk={handleEditOk}
-        handleCancel={() => setEditVisible(false)}
-      />
-      <BankImportModal
-        visible={importVisible}
-        onUpload={handleImport}
-        handleCancel={() => setImportVisible(false)}
-      />
+      {canEdit && (
+        <BankEditModal
+          title="编辑"
+          initialValues={editInitialValues}
+          visible={editVisible}
+          handleOk={handleEditOk}
+          handleCancel={() => setEditVisible(false)}
+        />
+      )}
+      {canImport && (
+        <BankImportModal
+          visible={importVisible}
+          onUpload={handleImport}
+          handleCancel={() => setImportVisible(false)}
+        />
+      )}
     </>
   )
 }
