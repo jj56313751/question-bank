@@ -1,7 +1,7 @@
 import { fetchQuestions } from '@/app/lib/data'
 import type { Question } from '@/app/lib/definitions'
 import { questionTypesMap } from '@/app/lib/constant'
-import { Empty } from 'antd'
+import { Empty, Card, Tag } from 'antd'
 
 export default async function SearchResult({
   title,
@@ -25,13 +25,31 @@ export default async function SearchResult({
     <div className="mx-auto mt-2 w-11/12">
       {questionList && questionList.length ? (
         questionList?.map((question) => (
-          <div className="" key={question.id}>
-            <p>{questionTypesMap[String(question.type)]}</p>
-            <p>{question.title}</p>
-            <p>{question.options}</p>
-            <p>正确答案：{question.answer}</p>
-            <p>题目解析：{question.analysis}</p>
-          </div>
+          <Card
+            key={question.id}
+            className="!mb-4"
+            title={questionTypesMap[String(question.type)]}
+          >
+            <p className="mb-2 text-base">{question.title}</p>
+            {question.options &&
+              question.options.split('\n').map((option, oi) => (
+                <p className="leading-6" key={oi}>
+                  {option}
+                </p>
+              ))}
+            <p className="my-2">
+              <Tag bordered={false} color="success">
+                正确答案
+              </Tag>
+              {question.answer}
+            </p>
+            <p>
+              <Tag bordered={false} color="orange">
+                题目解析
+              </Tag>
+              {question.analysis}
+            </p>
+          </Card>
         ))
       ) : (
         <Empty className="mt-10" description="暂无结果" />

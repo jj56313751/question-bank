@@ -65,12 +65,12 @@ export default async function Layout({
       >
         <Content
           style={{ padding: '10px' }}
-          className="box-border flex h-full flex-col"
+          className="box-border flex flex-col"
         >
           <div
             style={{
-              padding: 10,
-              minHeight: '100%',
+              padding: '10px',
+              minHeight: 'calc(100vh - 20px)',
               boxSizing: 'border-box',
               background: '#fff',
               borderRadius: '8px',
