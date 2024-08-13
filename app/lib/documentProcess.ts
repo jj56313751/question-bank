@@ -150,10 +150,10 @@ export const removeDuplicateParseToJson = (document: string): any[] => {
 
 class QuestionItem {
   type: number
-  title: string | null
-  options: string | null
-  answer: string | null
-  analysis: string | null
+  title: string
+  options: string
+  answer: string
+  analysis: string
 
   constructor({
     type,
@@ -169,10 +169,10 @@ class QuestionItem {
     analysis?: string
   }) {
     this.type = type || 0
-    this.title = title || null
-    this.options = options || null
-    this.answer = answer || null
-    this.analysis = analysis || null
+    this.title = title || ''
+    this.options = options || ''
+    this.answer = answer || ''
+    this.analysis = analysis || ''
   }
 }
 
