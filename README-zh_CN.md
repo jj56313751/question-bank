@@ -4,7 +4,7 @@
 
 <h1>题库管理系统</h1>
 
-[English](./README.md)English · 中文
+[English](./README.md) · 中文
 
 </div>
 
