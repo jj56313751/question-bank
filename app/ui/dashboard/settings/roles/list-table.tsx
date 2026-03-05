@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Button, Space, Table, message, Tag, Modal } from 'antd'
 import type { TableProps } from 'antd'
 import RoleEditModal from './role-edit-modal'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 import { updateRole } from '@/app/lib/actions'
 import { isEnabledMap } from '@/app/lib/constant'
 import dayjs from 'dayjs'
@@ -18,7 +19,7 @@ export default function ListTable({
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
-  const { replace, push } = useRouter()
+  const { replace, push } = useNavigateWithProgress()
 
   const [messageApi, contextHolder] = message.useMessage()
 

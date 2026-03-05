@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { useNavigationContext } from './navigation-context'
 import { Menu, Button, Modal } from 'antd'
 import { generateSideNavs } from './config'
 import { LogoutOutlined } from '@ant-design/icons'
@@ -17,6 +18,7 @@ export default function SideNav() {
   }: any = useSession()
   const router = useRouter()
   const pathName = usePathname()
+  const navigation = useNavigationContext()
   const defaultSelectedKeys: string[] = ['operate']
   const [selectedKeys, setSelectedkeys] =
     useState<string[]>(defaultSelectedKeys)
@@ -74,7 +76,7 @@ export default function SideNav() {
     while (keyPath.length) {
       path += `/${keyPath.pop()}`
     }
-    router.push(path)
+    navigation ? navigation.navigate(path) : router.push(path)
   }
 
   const handleConfirm = () => {

@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { Input, message } from 'antd'
 import type { SearchProps } from 'antd/es/input/Search'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 import { useDebouncedCallback } from 'use-debounce'
 
 const { Search } = Input
@@ -11,7 +12,7 @@ export default function SearchBar() {
   const [messageApi, contextHolder] = message.useMessage()
   const searchParams = useSearchParams()
   const pathname = usePathname()
-  const { replace } = useRouter()
+  const { replace } = useNavigateWithProgress()
 
   const onSearch: SearchProps['onSearch'] = useDebouncedCallback(
     (value, _e, info) => {

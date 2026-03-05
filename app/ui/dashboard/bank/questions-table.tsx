@@ -4,7 +4,8 @@ import { Button, Space, Table, message, Modal } from 'antd'
 import type { TableProps } from 'antd'
 import { QuestionList } from '@/app/lib/types'
 import { questionTypesMap } from '@/app/lib/constant'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 import QuestionEditModal from './question-edit-modal'
 import { updateQuestion, deleteQuestion } from '@/app/lib/actions'
 import useHasPermission from '@/app/hooks/useHasPermission'
@@ -18,7 +19,7 @@ export default function ListTable({
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
-  const { replace } = useRouter()
+  const { replace } = useNavigateWithProgress()
 
   const [messageApi, contextHolder] = message.useMessage()
 

@@ -3,7 +3,8 @@ import React, { useState } from 'react'
 import { DownOutlined } from '@ant-design/icons'
 import { Form, Flex, Space, Button, Row, Col, Select, Input } from 'antd'
 import { SearchFormItem } from '@/app/lib/types'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 import { useDebouncedCallback } from 'use-debounce'
 
 export default function SearchForm({
@@ -20,7 +21,7 @@ export default function SearchForm({
   const searchParams = useSearchParams()
   // console.log('[searchParams]-15', searchParams)
   const pathname = usePathname()
-  const { replace } = useRouter()
+  const { replace } = useNavigateWithProgress()
 
   const [form] = Form.useForm()
   const [expand, setExpand] = useState(false)

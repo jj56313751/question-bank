@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Button, Space, Table, message, Tag } from 'antd'
 import type { TableProps } from 'antd'
 import { BankList } from '@/app/lib/types'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 import BankEditModal from './bank-edit-modal'
 import BankImportModal from './bank-import-modal'
 import { updateBank, importQuestions } from '@/app/lib/actions'
@@ -21,7 +22,7 @@ export default function ListTable({
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
-  const { replace, push } = useRouter()
+  const { replace, push } = useNavigateWithProgress()
 
   const [messageApi, contextHolder] = message.useMessage()
 

@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { Steps, message } from 'antd'
 import SelectBank from '@/app/ui/dashboard/operate/select-bank'
 import SearchBar from '@/app/ui/dashboard/operate/search-bar'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 import type { Bank } from '@/app/lib/definitions'
 
 export default function Index({
@@ -17,7 +18,7 @@ export default function Index({
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
-  const { replace } = useRouter()
+  const { replace } = useNavigateWithProgress()
 
   const [messageApi, contextHolder] = message.useMessage()
 

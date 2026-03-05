@@ -2,7 +2,8 @@
 import { useEffect } from 'react'
 import { Button, Form, Select } from 'antd'
 import type { Bank } from '@/app/lib/definitions'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 
 export default function SelectBank({
   bankValue,
@@ -17,7 +18,7 @@ export default function SelectBank({
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
-  const { replace } = useRouter()
+  const { replace } = useNavigateWithProgress()
 
   const handleBankChange = (value: number) => {
     // console.log('[value]-24', value)

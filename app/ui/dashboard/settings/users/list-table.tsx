@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { Button, Space, Table, message, Tag, Modal } from 'antd'
 import type { TableProps } from 'antd'
 import { UserList } from '@/app/lib/types'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useNavigateWithProgress } from '@/app/hooks/useNavigateWithProgress'
 import UserEditModal from './user-edit-modal'
 import { resetUserPassowrd, updateUserNRoles } from '@/app/lib/actions'
 import { isEnabledMap } from '@/app/lib/constant'
@@ -19,7 +20,7 @@ export default function ListTable({
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
-  const { replace, push } = useRouter()
+  const { replace, push } = useNavigateWithProgress()
 
   const [messageApi, contextHolder] = message.useMessage()
 
