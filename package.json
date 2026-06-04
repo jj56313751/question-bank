@@ -11,7 +11,10 @@
     "prettier:check": "prettier --check --ignore-unknown .",
     "prettier:comment": "自动格式化当前目录下的所有文件",
     "seed": "ts-node --transpile-only prisma/seed.ts",
-    "start": "next start"
+    "start": "next start",
+    "vector:install": "bash vector-service/install.sh",
+    "vector:dev": "bash vector-service/start.sh",
+    "vector:reindex": "cd vector-service && .venv/bin/python scripts/reindex_all.py"
   },
   "lint-staged": {
     "app/**/*.{js,jsx,ts,tsx,vue,css,scss,json}": [

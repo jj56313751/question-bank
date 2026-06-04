@@ -6,6 +6,10 @@ import {
   getAllPathsFromPermissions,
   buildNestedPermissions,
 } from '@/app/lib/utils'
+import {
+  searchQuestionsByVector,
+  VECTOR_MIN_SCORE,
+} from '@/app/lib/vector-search'
 
 export async function fetchBanks({
   id,
@@ -124,14 +128,7 @@ export async function fetchQuestions({
           deletedAt: null,
         },
         bankId ? { bankId: Number(bankId) } : {},
-        title
-          ? {
-              OR: [
-                { title: { contains: title } },
-                { options: { contains: title } },
-              ],
-            }
-          : {},
+        title ? { title: { contains: title } } : {},
         type ? { type: Number(type) } : {},
       ],
     }
@@ -172,6 +169,103 @@ export async function fetchQuestions({
   } catch (error) {
     console.error('Database Error:', error)
     throw new Error('Failed to fetchQuestions.')
+  }
+}
+
+const questionListSelect = {
+  id: true,
+  type: true,
+  title: true,
+  options: true,
+  answer: true,
+  analysis: true,
+  bankId: true,
+  createdAt: true,
+  createdBy: true,
+  updatedAt: true,
+  updatedBy: true,
+} as const
+
+export type QuestionListItem = Prisma.QuestionsGetPayload<{
+  select: typeof questionListSelect
+}>
+
+export type QuestionWithScore = QuestionListItem & { score?: number }
+
+/** 按 id 列表查询题目（按 ids 顺序返回） */
+export async function fetchQuestionsByIds({
+  ids,
+  bankId,
+}: {
+  ids: number[]
+  bankId: number
+}): Promise<QuestionListItem[]> {
+  if (!ids.length) return []
+  const rows = await prisma.questions.findMany({
+    where: {
+      id: { in: ids },
+      bankId: Number(bankId),
+      deletedAt: null,
+    },
+    select: questionListSelect,
+  })
+  const map = new Map(rows.map((row) => [row.id, row]))
+  const list: QuestionListItem[] = []
+  for (const id of ids) {
+    const row = map.get(id)
+    if (row) list.push(row)
+  }
+  return list
+}
+
+export type QuestionSearchMode = 'vector' | 'keyword'
+
+/**
+ * 优先向量语义检索；无满足相关度阈值的结果时，回退 MySQL 关键词匹配
+ */
+export async function fetchQuestionsByVectorSearch({
+  bankId,
+  title,
+  pageNumber = 1,
+  pageSize = 10,
+}: { bankId: number; title: string } & Page): Promise<{
+  total: number
+  list: QuestionWithScore[]
+  searchMode: QuestionSearchMode
+}> {
+  const topK = 50
+  const hits = await searchQuestionsByVector(
+    title,
+    bankId,
+    topK,
+    VECTOR_MIN_SCORE,
+  )
+
+  if (hits.length > 0) {
+    const total = hits.length
+    const offset = (pageNumber - 1) * Number(pageSize)
+    const pageHits = hits.slice(offset, offset + Number(pageSize))
+    const ids = pageHits.map((h) => h.id)
+    const rows = await fetchQuestionsByIds({ ids, bankId })
+    const scoreMap = new Map(pageHits.map((h) => [h.id, h.score]))
+    const list: QuestionWithScore[] = rows.map((row) => ({
+      ...row,
+      score: scoreMap.get(row.id),
+    }))
+    return { total, list, searchMode: 'vector' }
+  }
+
+  const mysqlRes = (await fetchQuestions({
+    bankId,
+    title,
+    pageNumber,
+    pageSize,
+  })) as { total: number; list: QuestionListItem[] }
+
+  return {
+    total: mysqlRes.total,
+    list: mysqlRes.list,
+    searchMode: 'keyword',
   }
 }
 

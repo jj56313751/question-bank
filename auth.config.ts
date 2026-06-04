@@ -4,6 +4,7 @@ import reqHeadersMiddleware from '@/middleware/reqHeadersMiddleware'
 import apiAuthMiddleware from '@/middleware/apiAuthMiddleware'
 
 export const authConfig = {
+  trustHost: true, // 信任请求头中的 Host，支持内网 IP 访问时正确重定向
   pages: {
     signIn: '/login',
   },

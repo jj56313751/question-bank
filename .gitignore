@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 向量库本地数据
+vector-service/data/
+vector-service/.venv/

@@ -8,6 +8,11 @@ import { signIn, signOut, auth, unstable_update } from '@/auth'
 import { AuthError } from 'next-auth'
 import { intPassword } from '@/app/lib/constant'
 import prisma from '@/app/lib/prisma'
+import {
+  removeQuestionVector,
+  syncQuestionVector,
+  syncQuestionsVectorBatch,
+} from '@/app/lib/question-vector-sync'
 
 function revalidateCurrentPath() {
   const redirectUrl = headers().get('x-request-url') || ''
@@ -273,7 +278,7 @@ export async function createQuestion(formData: any) {
     validatedFields.data
 
   try {
-    await prisma.questions.create({
+    const question = await prisma.questions.create({
       data: {
         type,
         title,
@@ -284,6 +289,7 @@ export async function createQuestion(formData: any) {
         createdBy,
       },
     })
+    await syncQuestionVector(question)
   } catch (error: any) {
     return {
       code: error.code || -1,
@@ -310,7 +316,7 @@ export async function updateQuestion(id: number, formData: any) {
     validatedFields.data
 
   try {
-    await prisma.questions.update({
+    const question = await prisma.questions.update({
       where: { id },
       data: {
         type,
@@ -321,6 +327,7 @@ export async function updateQuestion(id: number, formData: any) {
         updatedBy,
       },
     })
+    await syncQuestionVector(question)
   } catch (error: any) {
     return {
       code: error.code || -1,
@@ -355,6 +362,7 @@ export async function deleteQuestion(id: number, bankId: number) {
       },
       where: { id, bankId },
     })
+    await removeQuestionVector(id)
   } catch (error: any) {
     return {
       code: error.code || -1,
@@ -409,7 +417,7 @@ export async function importQuestions(bankId: number, data: any[]) {
 
   try {
     const res = await prisma.$transaction(upsertOperations)
-    // await db.query(sql, values.flat())
+    await syncQuestionsVectorBatch(res)
   } catch (error: any) {
     console.log('[error]-307', error)
     return {

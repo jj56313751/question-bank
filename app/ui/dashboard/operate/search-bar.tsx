@@ -41,7 +41,7 @@ export default function SearchBar() {
       {contextHolder}
       <Search
         defaultValue={searchParams.get('title')?.toString()}
-        placeholder="输入题目关键字"
+        placeholder="输入题目关键字（语义检索）"
         size="middle"
         onSearch={onSearch}
         enterButton

@@ -1,0 +1,10 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+chromadb==0.5.23
+sentence-transformers==3.3.1
+pydantic==2.10.3
+python-dotenv==1.0.1
+pymysql==1.1.1
+# chromadb 要求 tokenizers<=0.20.3；transformers 4.46+ 要求 tokenizers>=0.20
+transformers>=4.46.0,<4.48
+tokenizers==0.20.3

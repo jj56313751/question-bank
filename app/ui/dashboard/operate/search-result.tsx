@@ -1,5 +1,5 @@
-import { fetchQuestions } from '@/app/lib/data'
-import type { Question } from '@/app/lib/definitions'
+import { fetchQuestionsByVectorSearch } from '@/app/lib/data'
+import type { QuestionWithScore } from '@/app/lib/data'
 import { questionTypesMap } from '@/app/lib/constant'
 import { Empty, Card, Tag } from 'antd'
 
@@ -10,25 +10,41 @@ export default async function SearchResult({
   title?: string
   bankId?: number
 }) {
-  let currentPage = 1
-  let questionList: Question[] = []
+  let questionList: QuestionWithScore[] = []
+  let searchMode: 'vector' | 'keyword' | null = null
   if (title && bankId) {
-    const res: any = await fetchQuestions({
+    const res = await fetchQuestionsByVectorSearch({
       bankId,
       title,
-      pageNumber: currentPage,
+      pageNumber: 1,
+      pageSize: 20,
     })
     questionList = res.list
+    searchMode = res.searchMode
   }
 
   return (
     <div className="mx-auto mt-2 w-11/12">
+      {searchMode === 'keyword' ? (
+        <p className="mb-3 text-sm text-gray-500">
+          未找到语义相关题目，已改用题库关键词匹配
+        </p>
+      ) : null}
       {questionList && questionList.length ? (
         questionList?.map((question) => (
           <Card
             key={question.id}
             className="!mb-4"
-            title={questionTypesMap[String(question.type)]}
+            title={
+              <span className="flex items-center gap-2">
+                {questionTypesMap[String(question.type)]}
+                {question.score !== undefined ? (
+                  <Tag color="blue">
+                    相关度 {Math.round(question.score * 100)}%
+                  </Tag>
+                ) : null}
+              </span>
+            }
           >
             <p className="mb-2 text-base">{question.title}</p>
             {question.options &&
